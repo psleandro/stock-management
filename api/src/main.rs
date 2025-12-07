@@ -2,7 +2,11 @@ use std::{env, net::SocketAddr};
 use dotenvy::dotenv;
 use tokio::net::TcpListener;
 
+use crate::app::AppState;
+
+pub mod app;
 pub mod extractors;
+pub mod infrastructure;
 pub mod routes;
 pub mod handlers;
 
@@ -10,7 +14,9 @@ pub mod handlers;
 async fn main() {
     dotenv().ok();
 
-    let app = routes::app_routes();
+    let app_state = AppState::new();
+
+    let app = routes::app_routes().with_state(app_state);
 
     let port: u16 = env::var("PORT")
         .unwrap_or_else(|_| "8000".to_string())

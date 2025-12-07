@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.7"
+deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
+diesel = { version = "2.3.4", features = ["postgres"] }
 dotenvy = "0.15.7"
 serde = { version = "1.0.228", features = ["derive"]}
 thiserror = "2.0.17"
