@@ -6,7 +6,7 @@ use crate::infrastructure::models::CreateUserRow;
 use crate::infrastructure::models::UserRow;
 use crate::infrastructure::schema::users;
 
-use crate::models::user::{ User, CreateUser };
+use crate::models::user::{ User, AuthUser, CreateUser };
 
 pub struct UserRepository {
  	pub pool: Pool<Manager<PgConnection>>,
@@ -43,4 +43,25 @@ impl UserRepository {
 			deleted_at: created_user.deleted_at.map(|d| d.to_string()),
 		}
 	}
+
+    pub async fn get_user_by_email(&self, user_email: String) -> Option<AuthUser> {
+        let connection = self.pool.get().await.unwrap();
+
+        let user = connection.interact(|conn| {
+            users::table
+                .filter(users::email.eq(user_email))
+                .first::<UserRow>(conn)
+                .optional()
+        }).await.unwrap().unwrap();
+        
+        user.map(|u| AuthUser {
+            id: u.id,
+			name: u.name,
+            password_hash: u.password,
+			email: u.email,
+			created_at: u.created_at.to_string(),
+			updated_at: u.updated_at.to_string(),
+			deleted_at: u.deleted_at.map(|d| d.to_string()),
+        })
+    }
 }
