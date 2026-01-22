@@ -7,7 +7,9 @@ use crate::app::AppState;
 pub mod app;
 pub mod extractors;
 pub mod infrastructure;
+pub mod models;
 pub mod routes;
+pub mod services;
 pub mod handlers;
 
 #[tokio::main]

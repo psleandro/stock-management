@@ -1,44 +1,23 @@
+use std::sync::Arc;
 use axum::{
-	extract::Json,
+	extract::{Json, State},
 	http::StatusCode,
 	response::{IntoResponse, Response}
 };
-use serde::{Deserialize, Serialize};
-use validator::Validate;
+use crate::{app::AppState, extractors::ValidatedJson};
+use crate::models::dto::user_dto::SignUp;
+use crate::services::auth_service::AuthService;
 
-use crate::extractors::ValidatedJson;
+pub async fn signup(
+	State(state): State<Arc<AppState>>,
+	ValidatedJson(payload): ValidatedJson<SignUp>
+) -> Response {
+	let auth_service = AuthService::new(state.db_pool.clone());
 
-#[derive(Serialize)]
-struct User {
-    id: u64,
-    name: String,
-    email: String,
-}
+	let created_user = auth_service.signup(payload).await;
 
-#[derive(Serialize)]
-pub struct ErrorResponse {
-	error: String,
-}
-
-#[derive(Deserialize, Validate)]
-pub struct SignUp {
-	#[validate(length(min = 2, message = "must be at least 2 characters long"))]
-	name: String,
-
-	#[validate(email(message = "invalid format"))]
-	email: String,
-
-	#[validate(length(min = 8, message = "must be at least 8 characters long"))]
-	password: String,
-}
-
-
-pub async fn signup(ValidatedJson(payload): ValidatedJson<SignUp>) -> Response {
-	let created_user = User {
-		id: 1,
-		name: payload.name,
-		email: payload.email,
-	};
-
-	(StatusCode::CREATED, Json(created_user)).into_response()
+	match created_user {
+		Ok(created_user) => (StatusCode::CREATED, Json(created_user)).into_response(),
+		Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+	}
 }
