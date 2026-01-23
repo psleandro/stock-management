@@ -2,9 +2,9 @@ use deadpool_diesel::{Manager, Pool};
 use diesel::prelude::*;
 use diesel::PgConnection;
 
-use crate::infrastructure::models::CreateUserRow;
-use crate::infrastructure::models::UserRow;
-use crate::infrastructure::schema::users;
+use crate::infrastructure::db::models::CreateUserRow;
+use crate::infrastructure::db::models::UserRow;
+use crate::infrastructure::db::schema::users;
 
 use crate::models::user::{ User, AuthUser, CreateUser };
 

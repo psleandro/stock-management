@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
 
-use crate::infrastructure::schema::users;
+use crate::infrastructure::db::schema::users;
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name=users)]

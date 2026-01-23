@@ -5,7 +5,8 @@ use rand::rngs::OsRng;
 use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 
-use crate::{infrastructure::user_repository::UserRepository, models::dto::user_dto::SignInResponse};
+use crate::infrastructure::db::user_repository::UserRepository;
+use crate::models::dto::user_dto::SignInResponse;
 use crate::infrastructure::auth::jwt::JwtService;
 use crate::models::dto::user_dto::{SignUp, SignIn};
 use crate::models::user::{User, CreateUser};

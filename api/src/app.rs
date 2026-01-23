@@ -3,7 +3,7 @@ use std::sync::Arc;
 use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 
-use crate::infrastructure::db;
+use crate::infrastructure::db::db;
 
 #[derive(Clone)]
 pub struct AppState {
