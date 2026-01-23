@@ -23,7 +23,7 @@ impl AuthService {
 
     pub async fn signup(&self, payload: SignUp) -> Result<User, Error> {
 
-        let password_hash = AuthService::hash_password(&payload.password)?;
+        let password_hash = self.hash_password(&payload.password)?;
 
         let new_user_payload = CreateUser {
             name: payload.name,
@@ -40,7 +40,7 @@ impl AuthService {
         let auth_user = self.user_repository.get_user_by_email(payload.email).await;
 
         if let Some(auth_user) = auth_user {
-            let is_valid_password = AuthService::verify_password(
+            let is_valid_password = self.verify_password(
                 &payload.password, &auth_user.password_hash
             );
 
@@ -64,7 +64,7 @@ impl AuthService {
         return Err("Invalid email or password".into());
     }
 
-    fn hash_password(password: &str) -> Result<String, Error> {
+    fn hash_password(&self, password: &str) -> Result<String, Error> {
         let pepper: String = env::var("PASSWORD_PEPPER").expect("PASSWORD_PEPPER must be set");
 
         let mut password_peppered = String::with_capacity(password.len() + pepper.len());
@@ -81,7 +81,7 @@ impl AuthService {
         Ok(hashed_password)
     }
 
-    fn verify_password(password: &str, password_hash: &str) -> bool {
+    fn verify_password(&self, password: &str, password_hash: &str) -> bool {
         let pepper: String = env::var("PASSWORD_PEPPER").expect("PASSWORD_PEPPER must be set");
 
         let mut password_peppered = String::with_capacity(password.len() + pepper.len());

@@ -30,13 +30,6 @@ pub struct SignInResponse {
 }
 
 #[derive(Serialize)]
-pub struct UserResponse {
-    pub id: u64,
-    pub name: String,
-    pub email: String,
-}
-
-#[derive(Serialize)]
 pub struct ErrorResponse {
     pub error: String,
 }
