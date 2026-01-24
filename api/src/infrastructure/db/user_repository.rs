@@ -6,6 +6,7 @@ use crate::infrastructure::db::models::CreateUserRow;
 use crate::infrastructure::db::models::UserRow;
 use crate::infrastructure::db::schema::users;
 
+use crate::infrastructure::db::schema::workspaces;
 use crate::models::user::{ User, AuthUser, CreateUser };
 
 pub struct UserRepository {
@@ -49,15 +50,18 @@ impl UserRepository {
 
         let user = connection.interact(|conn| {
             users::table
+                .inner_join(workspaces::table.on(workspaces::owner_id.eq(users::id))) 
                 .filter(users::email.eq(user_email))
-                .first::<UserRow>(conn)
+                .select((users::all_columns, workspaces::id))
+                .first::<(UserRow, i32)>(conn)
                 .optional()
         }).await.unwrap().unwrap();
         
-        user.map(|u| AuthUser {
+        user.map(|(u, workspace_id)| AuthUser {
             id: u.id,
 			name: u.name,
             password_hash: u.password,
+            workspace_id: workspace_id,
 			email: u.email,
 			created_at: u.created_at.to_string(),
 			updated_at: u.updated_at.to_string(),

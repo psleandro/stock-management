@@ -21,6 +21,7 @@ pub struct AuthUser {
     pub name: Option<String>,
     pub email: String,
     pub password_hash: String,
+    pub workspace_id: i32,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,

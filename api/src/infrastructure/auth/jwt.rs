@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{ DecodingKey, EncodingKey, Header, Validation, decode, encode, errors::Error };
 use serde::{Deserialize, Serialize};
 
-use crate::models::user::User;
+use crate::models::user::AuthUser;
 
 pub struct JwtService {
     jwt_secret: String,
@@ -11,6 +11,7 @@ pub struct JwtService {
 #[derive(Serialize, Deserialize)]
 pub struct JwtClaims {
     sub: String,
+    workspace_id: String,
     iat: i64,
     exp: i64,
 }
@@ -20,7 +21,7 @@ impl JwtService {
         Self { jwt_secret }
     }
 
-    pub fn generate_token(&self, user: &User) -> Result<String, Error> {
+    pub fn generate_token(&self, user: &AuthUser) -> Result<String, Error> {
 
         let now = Utc::now();
 
@@ -29,6 +30,7 @@ impl JwtService {
 
         let claims = JwtClaims {
             sub: user.id.to_string(),
+            workspace_id: user.workspace_id.to_string(),
             iat: issued_at,
             exp: expiration,
         };

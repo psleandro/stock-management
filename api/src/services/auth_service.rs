@@ -6,6 +6,8 @@ use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 
 use crate::infrastructure::db::user_repository::UserRepository;
+use crate::infrastructure::db::workspace_repository::WorkspaceRepository;
+use crate::models::workspace::CreateWorkspace;
 use crate::models::dto::user_dto::SignInResponse;
 use crate::infrastructure::auth::jwt::JwtService;
 use crate::models::dto::user_dto::{SignUp, SignIn};
@@ -13,13 +15,15 @@ use crate::models::user::{User, CreateUser};
 
 pub struct AuthService {
     user_repository: UserRepository,
+    workspace_repository: WorkspaceRepository
 }
 
 impl AuthService {
 
     pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let user_repository = UserRepository::new(pool);
-        Self { user_repository }
+        let user_repository = UserRepository::new(pool.clone());
+        let workspace_repository = WorkspaceRepository::new(pool.clone());
+        Self { user_repository, workspace_repository }
     }
 
     pub async fn signup(&self, payload: SignUp) -> Result<User, Error> {
@@ -33,6 +37,13 @@ impl AuthService {
         };
 
         let created_user = self.user_repository.create(new_user_payload).await;
+
+        let new_workspace_payload = CreateWorkspace {
+            name: None,
+            owner_id: created_user.id,
+        };
+
+        self.workspace_repository.create_workspace(new_workspace_payload).await;
 
         Ok(created_user)
     }
@@ -49,9 +60,9 @@ impl AuthService {
                 let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
                 let token_service = JwtService::new(jwt_secret);
 
-                let user: User = auth_user.into();
+                let access_token = token_service.generate_token(&auth_user)?;
 
-                let access_token = token_service.generate_token(&user)?;
+                let user: User = auth_user.into();
 
                 let sign_in_response = SignInResponse {
                     user,
