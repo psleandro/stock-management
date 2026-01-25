@@ -10,10 +10,10 @@ pub struct JwtService {
 
 #[derive(Serialize, Deserialize)]
 pub struct JwtClaims {
-    sub: String,
-    workspace_id: String,
-    iat: i64,
-    exp: i64,
+    pub sub: String,
+    pub workspace_id: String,
+    pub iat: i64,
+    pub exp: i64,
 }
 
 impl JwtService {
