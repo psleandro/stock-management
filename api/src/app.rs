@@ -7,7 +7,7 @@ use crate::infrastructure::db::db;
 
 #[derive(Clone)]
 pub struct AppState {
-  pub db_pool: Pool<Manager<PgConnection>>,
+    pub db_pool: Pool<Manager<PgConnection>>,
 }
 
 impl AppState {

@@ -11,9 +11,7 @@ pub fn create_db_pool() -> Pool<Manager<PgConnection>> {
 
     let manager = Manager::new(database_url, deadpool_diesel::Runtime::Tokio1);
 
-    let pool = Pool::builder(manager)
-        .build()
-        .unwrap();
+    let pool = Pool::builder(manager).build().unwrap();
 
     pool
 }

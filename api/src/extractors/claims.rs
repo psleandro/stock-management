@@ -4,22 +4,22 @@ use axum::{
     RequestPartsExt,
     extract::FromRequestParts,
     http::{StatusCode, request::Parts},
-    response::{Response, IntoResponse}
+    response::{IntoResponse, Response},
 };
 use axum_extra::{
-    headers::{authorization::Bearer,Authorization},
-    TypedHeader
+    TypedHeader,
+    headers::{Authorization, authorization::Bearer},
 };
 
 use crate::infrastructure::auth::jwt::{JwtClaims, JwtService};
 
-impl <S> FromRequestParts<S> for JwtClaims where S: Send + Sync {
+impl<S> FromRequestParts<S> for JwtClaims
+where
+    S: Send + Sync,
+{
     type Rejection = Error;
 
-    async fn from_request_parts(
-        parts: &mut Parts,
-        _state: &S,
-    ) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let TypedHeader(Authorization(bearer)) = parts
             .extract::<TypedHeader<Authorization<Bearer>>>()
             .await
@@ -28,7 +28,8 @@ impl <S> FromRequestParts<S> for JwtClaims where S: Send + Sync {
         let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
         let token_service = JwtService::new(jwt_secret);
 
-        let jwt_claims = token_service.get_claims_from_token(bearer.token())
+        let jwt_claims = token_service
+            .get_claims_from_token(bearer.token())
             .map_err(|_| Error::InvalidToken)?;
 
         Ok(jwt_claims)

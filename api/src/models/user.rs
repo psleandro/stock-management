@@ -5,15 +5,15 @@ pub struct User {
     pub id: i32,
     pub name: Option<String>,
     pub email: String,
-	pub created_at: String,
-	pub updated_at: String,
-	pub deleted_at: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
 }
 
 pub struct CreateUser {
     pub name: String,
     pub email: String,
-	pub password: String,
+    pub password: String,
 }
 
 pub struct AuthUser {
@@ -27,7 +27,7 @@ pub struct AuthUser {
     pub deleted_at: Option<String>,
 }
 
-impl From<AuthUser>  for User {
+impl From<AuthUser> for User {
     fn from(auth_user: AuthUser) -> Self {
         User {
             id: auth_user.id,

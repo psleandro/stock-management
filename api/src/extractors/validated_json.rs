@@ -1,7 +1,7 @@
 use axum::{
-    extract::{Json, FromRequest, Request, rejection::JsonRejection},
+    extract::{FromRequest, Json, Request, rejection::JsonRejection},
     http::StatusCode,
-    response::{IntoResponse, Response}
+    response::{IntoResponse, Response},
 };
 use serde::de::DeserializeOwned;
 use thiserror::Error;
@@ -20,11 +20,14 @@ impl IntoResponse for ServerError {
     fn into_response(self) -> Response {
         match self {
             ServerError::ValidationError(errors) => {
-                 let message = errors
+                let message = errors
                     .field_errors()
                     .iter()
                     .map(|(field, errors)| {
-                        let error_msg = errors.iter().next().map_or("", |e| e.message.as_deref().unwrap_or("Invalid value"));
+                        let error_msg = errors
+                            .iter()
+                            .next()
+                            .map_or("", |e| e.message.as_deref().unwrap_or("Invalid value"));
                         format!("Field '{}' error: {}", field, error_msg)
                     })
                     .collect::<Vec<String>>()

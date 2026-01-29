@@ -1,33 +1,36 @@
-use std::env;
 use argon2::{
-    Argon2, PasswordVerifier, password_hash::{Error, PasswordHasher, PasswordHash, SaltString}};
-use rand::rngs::OsRng;
+    Argon2, PasswordVerifier,
+    password_hash::{Error, PasswordHash, PasswordHasher, SaltString},
+};
 use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
+use rand::rngs::OsRng;
+use std::env;
 
+use crate::infrastructure::auth::jwt::JwtService;
 use crate::infrastructure::db::user_repository::UserRepository;
 use crate::infrastructure::db::workspace_repository::WorkspaceRepository;
-use crate::models::workspace::CreateWorkspace;
 use crate::models::dto::user_dto::SignInResponse;
-use crate::infrastructure::auth::jwt::JwtService;
-use crate::models::dto::user_dto::{SignUp, SignIn};
-use crate::models::user::{User, CreateUser};
+use crate::models::dto::user_dto::{SignIn, SignUp};
+use crate::models::user::{CreateUser, User};
+use crate::models::workspace::CreateWorkspace;
 
 pub struct AuthService {
     user_repository: UserRepository,
-    workspace_repository: WorkspaceRepository
+    workspace_repository: WorkspaceRepository,
 }
 
 impl AuthService {
-
     pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
         let user_repository = UserRepository::new(pool.clone());
         let workspace_repository = WorkspaceRepository::new(pool.clone());
-        Self { user_repository, workspace_repository }
+        Self {
+            user_repository,
+            workspace_repository,
+        }
     }
 
     pub async fn signup(&self, payload: SignUp) -> Result<User, Error> {
-
         let password_hash = self.hash_password(&payload.password)?;
 
         let new_user_payload = CreateUser {
@@ -43,18 +46,22 @@ impl AuthService {
             owner_id: created_user.id,
         };
 
-        self.workspace_repository.create_workspace(new_workspace_payload).await;
+        self.workspace_repository
+            .create_workspace(new_workspace_payload)
+            .await;
 
         Ok(created_user)
     }
 
-    pub async fn signin(&self, payload: SignIn) -> Result<SignInResponse, Box<dyn std::error::Error>>{
+    pub async fn signin(
+        &self,
+        payload: SignIn,
+    ) -> Result<SignInResponse, Box<dyn std::error::Error>> {
         let auth_user = self.user_repository.get_user_by_email(payload.email).await;
 
         if let Some(auth_user) = auth_user {
-            let is_valid_password = self.verify_password(
-                &payload.password, &auth_user.password_hash
-            );
+            let is_valid_password =
+                self.verify_password(&payload.password, &auth_user.password_hash);
 
             if is_valid_password {
                 let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
@@ -64,12 +71,9 @@ impl AuthService {
 
                 let user: User = auth_user.into();
 
-                let sign_in_response = SignInResponse {
-                    user,
-                    access_token,
-                };
+                let sign_in_response = SignInResponse { user, access_token };
 
-                return Ok(sign_in_response)
+                return Ok(sign_in_response);
             }
         }
 
@@ -83,12 +87,13 @@ impl AuthService {
         password_peppered.push_str(password);
         password_peppered.push_str(&pepper);
 
-        let salt =  SaltString::generate(&mut OsRng);
-
+        let salt = SaltString::generate(&mut OsRng);
 
         let argon2 = Argon2::default();
 
-        let hashed_password = argon2.hash_password(password_peppered.as_bytes(), &salt)?.to_string();
+        let hashed_password = argon2
+            .hash_password(password_peppered.as_bytes(), &salt)?
+            .to_string();
 
         Ok(hashed_password)
     }
@@ -102,11 +107,13 @@ impl AuthService {
 
         let parsed_hash = match PasswordHash::new(password_hash) {
             Ok(h) => h,
-            Err(_) => return false, 
+            Err(_) => return false,
         };
 
         let argon2 = Argon2::default();
 
-        argon2.verify_password(password_peppered.as_bytes(), &parsed_hash).is_ok()
+        argon2
+            .verify_password(password_peppered.as_bytes(), &parsed_hash)
+            .is_ok()
     }
 }
