@@ -7,7 +7,7 @@ edition = "2024"
 argon2 = "0.5.3"
 axum = "0.8.7"
 axum-extra = { version = "0.12.5", features = ["typed-header"]}
-chrono = "0.4.43"
+chrono = { version = "0.4.43", features = ["serde"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 diesel = { version = "2.3.4", features = ["postgres", "chrono"] }
 dotenvy = "0.15.7"
