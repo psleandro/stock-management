@@ -22,11 +22,9 @@ pub struct Product {
     pub deleted_at: Option<NaiveDateTime>,
 }
 
-impl TryFrom<ProductRow> for Product {
-    type Error = chrono::ParseError;
-
-    fn try_from(row: ProductRow) -> Result<Self, Self::Error> {
-        Ok(Product {
+impl From<ProductRow> for Product {
+    fn from(row: ProductRow) -> Self {
+        Product {
             id: row.id,
             workspace_id: row.workspace_id,
             name: row.name,
@@ -37,7 +35,7 @@ impl TryFrom<ProductRow> for Product {
             created_at: row.created_at,
             updated_at: row.updated_at,
             deleted_at: row.deleted_at,
-        })
+        }
     }
 }
 

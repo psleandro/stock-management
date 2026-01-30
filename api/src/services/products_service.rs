@@ -1,8 +1,7 @@
-use std::error::Error;
-
 use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 
+use crate::errors::ApplicationError;
 use crate::infrastructure::db::products_repository::ProductsRepository;
 use crate::models::dto::product_dto::{CreateProductDto, ListProductsParams, UpdateProductDto};
 use crate::models::product::{CreateProduct, Product, UpdateProduct};
@@ -23,7 +22,7 @@ impl ProductsService {
         &self,
         workspace_id: i32,
         params: ListProductsParams,
-    ) -> Result<Vec<Product>, Box<dyn Error>> {
+    ) -> Result<Vec<Product>, ApplicationError> {
         let search = params.search.unwrap_or_default();
 
         let products = self
@@ -38,20 +37,23 @@ impl ProductsService {
         &self,
         _user_id: i32,
         product_id: i32,
-    ) -> Result<Product, Box<dyn Error>> {
+    ) -> Result<Product, ApplicationError> {
         let product = self
             .products_repository
             .get_product_by_id(product_id)
             .await?;
 
-        Ok(product)
+        match product {
+            Some(p) => Ok(p),
+            None => Err(ApplicationError::NotFound),
+        }
     }
 
     pub async fn create_product(
         &self,
         workspace_id: i32,
         payload: CreateProductDto,
-    ) -> Result<Product, Box<dyn Error>> {
+    ) -> Result<Product, ApplicationError> {
         let create_product_data = CreateProduct {
             workspace_id: workspace_id,
             name: payload.name,
@@ -64,9 +66,9 @@ impl ProductsService {
         let created_product = self
             .products_repository
             .create_product(create_product_data)
-            .await;
+            .await?;
 
-        created_product
+        Ok(created_product)
     }
 
     pub async fn update_product(
@@ -74,7 +76,7 @@ impl ProductsService {
         _user_id: i32,
         product_id: i32,
         payload: UpdateProductDto,
-    ) -> Result<Product, Box<dyn Error>> {
+    ) -> Result<Product, ApplicationError> {
         let update_product_data = UpdateProduct {
             name: payload.name,
             unit: payload.unit,
@@ -88,16 +90,22 @@ impl ProductsService {
             .update_product(product_id, update_product_data)
             .await?;
 
-        Ok(updated_product)
+        match updated_product {
+            Some(p) => Ok(p),
+            None => Err(ApplicationError::NotFound),
+        }
     }
 
     pub async fn delete_product(
         &self,
         _user_id: i32,
         product_id: i32,
-    ) -> Result<(), Box<dyn Error>> {
-        self.products_repository.delete_product(product_id).await?;
+    ) -> Result<(), ApplicationError> {
+        let deleted_product = self.products_repository.delete_product(product_id).await?;
 
-        Ok(())
+        match deleted_product {
+            Some(_) => Ok(()),
+            None => Err(ApplicationError::NotFound),
+        }
     }
 }

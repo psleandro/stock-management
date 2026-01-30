@@ -26,7 +26,7 @@ pub async fn list_products(
 
     match response {
         Ok(products_list) => (StatusCode::OK, Json(products_list)).into_response(),
-        Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }
 
@@ -40,7 +40,7 @@ pub async fn get_product(
 
     match response {
         Ok(product) => (StatusCode::OK, Json(product)).into_response(),
-        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }
 
@@ -56,7 +56,7 @@ pub async fn create_product(
 
     match response {
         Ok(created_product) => (StatusCode::CREATED, Json(created_product)).into_response(),
-        Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }
 
@@ -73,7 +73,7 @@ pub async fn update_product(
 
     match response {
         Ok(updated_product) => (StatusCode::OK, Json(updated_product)).into_response(),
-        Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }
 
@@ -89,6 +89,6 @@ pub async fn delete_product(
 
     match response {
         Ok(_) => (StatusCode::NO_CONTENT).into_response(),
-        Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }

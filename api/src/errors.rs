@@ -23,6 +23,7 @@ pub enum InfrastructureError {
 pub enum ApplicationError {
     Auth(AuthError),
     Infrastructure(InfrastructureError),
+    NotFound,
 }
 
 impl From<AuthError> for ApplicationError {
@@ -65,6 +66,9 @@ impl IntoResponse for ApplicationError {
 
                 let error_message = format!("Infrastructure error: {}", error);
                 (StatusCode::INTERNAL_SERVER_ERROR, error_message).into_response()
+            }
+            ApplicationError::NotFound => {
+                (StatusCode::NOT_FOUND, "Resource Not Found").into_response()
             }
         }
     }

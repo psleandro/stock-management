@@ -2,8 +2,8 @@ use chrono::Utc;
 use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 use diesel::prelude::*;
-use std::error::Error;
 
+use crate::errors::InfrastructureError;
 use crate::infrastructure::db::models::{CreateProductRow, ProductRow, UpdateProductRow};
 use crate::infrastructure::db::schema::products;
 use crate::models::product::UpdateProduct;
@@ -22,10 +22,15 @@ impl ProductsRepository {
         &self,
         workspace_id: i32,
         search: &str,
-    ) -> Result<Vec<Product>, Box<dyn Error>> {
+    ) -> Result<Vec<Product>, InfrastructureError> {
         let search = search.to_string();
 
-        let connection = self.pool.get().await.unwrap();
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
+
         let product_list: Vec<ProductRow> = connection
             .interact(move |conn| {
                 let search_like = format!("%{}%", search);
@@ -54,19 +59,26 @@ impl ProductsRepository {
                 products_query.load::<ProductRow>(conn)
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
         let prods = product_list
             .into_iter()
-            .map(|product| product.try_into())
-            .collect::<Result<Vec<_>, _>>()?;
+            .map(|product| product.into())
+            .collect::<Vec<Product>>();
 
         Ok(prods)
     }
 
-    pub async fn get_product_by_id(&self, product_id: i32) -> Result<Product, Box<dyn Error>> {
-        let connection = self.pool.get().await.unwrap();
+    pub async fn get_product_by_id(
+        &self,
+        product_id: i32,
+    ) -> Result<Option<Product>, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let product = connection
             .interact(move |conn| {
@@ -74,21 +86,24 @@ impl ProductsRepository {
                     .filter(products::deleted_at.is_null())
                     .find(product_id)
                     .first::<ProductRow>(conn)
+                    .optional()
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        let product_item = product.try_into()?;
-
-        Ok(product_item)
+        Ok(product.map(|p| p.into()))
     }
 
     pub async fn create_product(
         &self,
         new_product: CreateProduct,
-    ) -> Result<Product, Box<dyn Error>> {
-        let connection = self.pool.get().await.unwrap();
+    ) -> Result<Product, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let create_product_row = CreateProductRow {
             workspace_id: new_product.workspace_id,
@@ -107,20 +122,22 @@ impl ProductsRepository {
                     .get_result::<ProductRow>(conn)
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        let product_item = created_product.try_into()?;
-
-        Ok(product_item)
+        Ok(created_product.into())
     }
 
     pub async fn update_product(
         &self,
         product_id: i32,
         product: UpdateProduct,
-    ) -> Result<Product, Box<dyn Error>> {
-        let connection = self.pool.get().await.unwrap();
+    ) -> Result<Option<Product>, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let update_product_row = UpdateProductRow {
             name: product.name,
@@ -134,35 +151,47 @@ impl ProductsRepository {
 
         let updated_product = connection
             .interact(move |conn| {
-                diesel::update(products::table.find(product_id))
-                    .set((&update_product_row, products::updated_at.eq(now)))
-                    .returning(ProductRow::as_returning())
-                    .get_result(conn)
+                diesel::update(
+                    products::table
+                        .filter(products::deleted_at.is_null())
+                        .find(product_id),
+                )
+                .set((&update_product_row, products::updated_at.eq(now)))
+                .returning(ProductRow::as_returning())
+                .get_result(conn)
+                .optional()
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        let product_item = updated_product.try_into()?;
-
-        Ok(product_item)
+        Ok(updated_product.map(|p| p.into()))
     }
 
-    pub async fn delete_product(&self, product_id: i32) -> Result<bool, Box<dyn Error>> {
-        let connection = self.pool.get().await.unwrap();
+    pub async fn delete_product(
+        &self,
+        product_id: i32,
+    ) -> Result<Option<Product>, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let now = Utc::now().naive_utc();
 
-        let deleted = connection
+        let deleted_product = connection
             .interact(move |conn| {
                 diesel::update(products::table.find(product_id))
                     .set(products::deleted_at.eq(Some(now)))
-                    .execute(conn)
+                    .returning(ProductRow::as_returning())
+                    .get_result(conn)
+                    .optional()
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        Ok(deleted > 0)
+        Ok(deleted_product.map(|p| p.into()))
     }
 }
