@@ -1,3 +1,4 @@
+pub mod authenticated_user;
 pub mod claims;
 pub mod validated_json;
 
