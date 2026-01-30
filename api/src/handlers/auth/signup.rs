@@ -18,6 +18,6 @@ pub async fn signup(
 
     match created_user {
         Ok(created_user) => (StatusCode::CREATED, Json(created_user)).into_response(),
-        Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }

@@ -2,6 +2,7 @@ use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 use diesel::prelude::*;
 
+use crate::errors::InfrastructureError;
 use crate::infrastructure::db::models::CreateUserRow;
 use crate::infrastructure::db::models::UserRow;
 use crate::infrastructure::db::schema::users;
@@ -18,8 +19,12 @@ impl UserRepository {
         Self { pool }
     }
 
-    pub async fn create(&self, user_payload: CreateUser) -> User {
-        let connection = self.pool.get().await.unwrap();
+    pub async fn create(&self, user_payload: CreateUser) -> Result<User, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let create_user_row = CreateUserRow {
             name: user_payload.name,
@@ -35,21 +40,28 @@ impl UserRepository {
                     .get_result::<UserRow>(conn)
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        User {
+        Ok(User {
             id: created_user.id,
             name: created_user.name,
             email: created_user.email,
             created_at: created_user.created_at.to_string(),
             updated_at: created_user.updated_at.to_string(),
             deleted_at: created_user.deleted_at.map(|d| d.to_string()),
-        }
+        })
     }
 
-    pub async fn get_user_by_email(&self, user_email: String) -> Option<AuthUser> {
-        let connection = self.pool.get().await.unwrap();
+    pub async fn get_user_by_email(
+        &self,
+        user_email: String,
+    ) -> Result<Option<AuthUser>, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let user = connection
             .interact(|conn| {
@@ -61,10 +73,10 @@ impl UserRepository {
                     .optional()
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        user.map(|(u, workspace_id)| AuthUser {
+        Ok(user.map(|(u, workspace_id)| AuthUser {
             id: u.id,
             name: u.name,
             password_hash: u.password,
@@ -73,6 +85,6 @@ impl UserRepository {
             created_at: u.created_at.to_string(),
             updated_at: u.updated_at.to_string(),
             deleted_at: u.deleted_at.map(|d| d.to_string()),
-        })
+        }))
     }
 }

@@ -5,6 +5,7 @@ use tokio::net::TcpListener;
 use crate::app::AppState;
 
 pub mod app;
+pub mod errors;
 pub mod extractors;
 pub mod handlers;
 pub mod infrastructure;

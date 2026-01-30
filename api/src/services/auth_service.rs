@@ -7,13 +7,15 @@ use diesel::PgConnection;
 use rand::rngs::OsRng;
 use std::env;
 
-use crate::infrastructure::auth::jwt::JwtService;
-use crate::infrastructure::db::user_repository::UserRepository;
-use crate::infrastructure::db::workspace_repository::WorkspaceRepository;
 use crate::models::dto::user_dto::SignInResponse;
 use crate::models::dto::user_dto::{SignIn, SignUp};
 use crate::models::user::{CreateUser, User};
 use crate::models::workspace::CreateWorkspace;
+use crate::{errors::ApplicationError, infrastructure::db::user_repository::UserRepository};
+use crate::{errors::AuthError, infrastructure::auth::jwt::JwtService};
+use crate::{
+    errors::InfrastructureError, infrastructure::db::workspace_repository::WorkspaceRepository,
+};
 
 pub struct AuthService {
     user_repository: UserRepository,
@@ -30,8 +32,10 @@ impl AuthService {
         }
     }
 
-    pub async fn signup(&self, payload: SignUp) -> Result<User, Error> {
-        let password_hash = self.hash_password(&payload.password)?;
+    pub async fn signup(&self, payload: SignUp) -> Result<User, ApplicationError> {
+        let password_hash = self
+            .hash_password(&payload.password)
+            .map_err(|e| InfrastructureError::Hashing(e.to_string()))?;
 
         let new_user_payload = CreateUser {
             name: payload.name,
@@ -39,7 +43,7 @@ impl AuthService {
             password: password_hash,
         };
 
-        let created_user = self.user_repository.create(new_user_payload).await;
+        let created_user = self.user_repository.create(new_user_payload).await?;
 
         let new_workspace_payload = CreateWorkspace {
             name: None,
@@ -53,11 +57,11 @@ impl AuthService {
         Ok(created_user)
     }
 
-    pub async fn signin(
-        &self,
-        payload: SignIn,
-    ) -> Result<SignInResponse, Box<dyn std::error::Error>> {
-        let auth_user = self.user_repository.get_user_by_email(payload.email).await;
+    pub async fn signin(&self, payload: SignIn) -> Result<SignInResponse, ApplicationError> {
+        let auth_user = self
+            .user_repository
+            .get_user_by_email(payload.email)
+            .await?;
 
         if let Some(auth_user) = auth_user {
             let is_valid_password =
@@ -67,7 +71,9 @@ impl AuthService {
                 let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
                 let token_service = JwtService::new(jwt_secret);
 
-                let access_token = token_service.generate_token(&auth_user)?;
+                let access_token = token_service
+                    .generate_token(&auth_user)
+                    .map_err(|_| AuthError::TokenCreation)?;
 
                 let user: User = auth_user.into();
 
@@ -77,7 +83,7 @@ impl AuthService {
             }
         }
 
-        return Err("Invalid email or password".into());
+        return Err(AuthError::WrongCredentials)?;
     }
 
     fn hash_password(&self, password: &str) -> Result<String, Error> {

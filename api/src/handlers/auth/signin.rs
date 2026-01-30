@@ -18,6 +18,6 @@ pub async fn signin(
 
     match sign_in_response {
         Ok(sign_in_response) => (StatusCode::OK, Json(sign_in_response)).into_response(),
-        Err(error) => (StatusCode::INTERNAL_SERVER_ERROR, Json(error.to_string())).into_response(),
+        Err(error) => error.into_response(),
     }
 }
