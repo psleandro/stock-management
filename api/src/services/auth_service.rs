@@ -52,7 +52,7 @@ impl AuthService {
 
         self.workspace_repository
             .create_workspace(new_workspace_payload)
-            .await;
+            .await?;
 
         Ok(created_user)
     }

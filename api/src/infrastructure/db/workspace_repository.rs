@@ -2,6 +2,7 @@ use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 use diesel::prelude::*;
 
+use crate::errors::InfrastructureError;
 use crate::infrastructure::db::models::CreateWorkspaceRow;
 use crate::infrastructure::db::models::WorkspaceRow;
 use crate::infrastructure::db::schema::workspaces;
@@ -17,8 +18,15 @@ impl WorkspaceRepository {
         Self { pool }
     }
 
-    pub async fn create_workspace(&self, workspace_payload: CreateWorkspace) -> Workspace {
-        let connection = self.pool.get().await.unwrap();
+    pub async fn create_workspace(
+        &self,
+        workspace_payload: CreateWorkspace,
+    ) -> Result<Workspace, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?;
 
         let create_workspace_row = CreateWorkspaceRow {
             name: workspace_payload.name,
@@ -33,16 +41,16 @@ impl WorkspaceRepository {
                     .get_result::<WorkspaceRow>(conn)
             })
             .await
-            .unwrap()
-            .unwrap();
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        Workspace {
+        Ok(Workspace {
             id: created_workspace.id,
             name: created_workspace.name,
             owner_id: created_workspace.id,
             created_at: created_workspace.created_at.to_string(),
             updated_at: created_workspace.updated_at.to_string(),
             deleted_at: created_workspace.deleted_at.map(|d| d.to_string()),
-        }
+        })
     }
 }
