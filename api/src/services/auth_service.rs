@@ -7,7 +7,6 @@ use diesel::PgConnection;
 use rand::rngs::OsRng;
 use std::env;
 
-use crate::models::dto::user_dto::SignInResponse;
 use crate::models::dto::user_dto::{SignIn, SignUp};
 use crate::models::user::{CreateUser, User};
 use crate::models::workspace::CreateWorkspace;
@@ -16,19 +15,22 @@ use crate::{errors::AuthError, infrastructure::auth::jwt::JwtService};
 use crate::{
     errors::InfrastructureError, infrastructure::db::workspace_repository::WorkspaceRepository,
 };
+use crate::{
+    infrastructure::db::transaction::TransactionRunner, models::dto::user_dto::SignInResponse,
+};
 
 pub struct AuthService {
     user_repository: UserRepository,
-    workspace_repository: WorkspaceRepository,
+    transaction_runner: TransactionRunner,
 }
 
 impl AuthService {
     pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
         let user_repository = UserRepository::new(pool.clone());
-        let workspace_repository = WorkspaceRepository::new(pool.clone());
+        let transaction_runner = TransactionRunner::new(pool.clone());
         Self {
             user_repository,
-            workspace_repository,
+            transaction_runner,
         }
     }
 
@@ -43,15 +45,20 @@ impl AuthService {
             password: password_hash,
         };
 
-        let created_user = self.user_repository.create(new_user_payload).await?;
+        let created_user = self
+            .transaction_runner
+            .run(|conn| {
+                let created_user = UserRepository::create_user_in_tx(conn, new_user_payload)?;
 
-        let new_workspace_payload = CreateWorkspace {
-            name: None,
-            owner_id: created_user.id,
-        };
+                let new_workspace_payload = CreateWorkspace {
+                    name: None,
+                    owner_id: created_user.id,
+                };
 
-        self.workspace_repository
-            .create_workspace(new_workspace_payload)
+                WorkspaceRepository::create_workspace_in_tx(conn, new_workspace_payload)?;
+
+                Ok(created_user)
+            })
             .await?;
 
         Ok(created_user)

@@ -19,38 +19,28 @@ impl UserRepository {
         Self { pool }
     }
 
-    pub async fn create(&self, user_payload: CreateUser) -> Result<User, InfrastructureError> {
+    pub async fn create_user(&self, user_payload: CreateUser) -> Result<User, InfrastructureError> {
         let connection = self
             .pool
             .get()
             .await
             .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
-        let create_user_row = CreateUserRow {
-            name: user_payload.name,
-            email: user_payload.email,
-            password: user_payload.password,
-        };
-
         let created_user = connection
-            .interact(|conn| {
-                diesel::insert_into(users::table)
-                    .values(create_user_row)
-                    .returning(UserRow::as_returning())
-                    .get_result::<UserRow>(conn)
-            })
+            .interact(|conn| Self::insert_user(conn, user_payload))
             .await
             .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
             .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
-        Ok(User {
-            id: created_user.id,
-            name: created_user.name,
-            email: created_user.email,
-            created_at: created_user.created_at.to_string(),
-            updated_at: created_user.updated_at.to_string(),
-            deleted_at: created_user.deleted_at.map(|d| d.to_string()),
-        })
+        Ok(Self::to_domain(created_user))
+    }
+
+    pub fn create_user_in_tx(
+        conn: &mut PgConnection,
+        user_payload: CreateUser,
+    ) -> Result<User, diesel::result::Error> {
+        let created_user = Self::insert_user(conn, user_payload)?;
+        Ok(Self::to_domain(created_user))
     }
 
     pub async fn get_user_by_email(
@@ -86,5 +76,32 @@ impl UserRepository {
             updated_at: u.updated_at.to_string(),
             deleted_at: u.deleted_at.map(|d| d.to_string()),
         }))
+    }
+
+    fn insert_user(
+        conn: &mut PgConnection,
+        user_payload: CreateUser,
+    ) -> Result<UserRow, diesel::result::Error> {
+        let create_user_row = CreateUserRow {
+            name: user_payload.name,
+            email: user_payload.email,
+            password: user_payload.password,
+        };
+
+        diesel::insert_into(users::table)
+            .values(create_user_row)
+            .returning(UserRow::as_returning())
+            .get_result::<UserRow>(conn)
+    }
+
+    fn to_domain(row: UserRow) -> User {
+        User {
+            id: row.id,
+            name: row.name,
+            email: row.email,
+            created_at: row.created_at.to_string(),
+            updated_at: row.updated_at.to_string(),
+            deleted_at: row.deleted_at.map(|d| d.to_string()),
+        }
     }
 }

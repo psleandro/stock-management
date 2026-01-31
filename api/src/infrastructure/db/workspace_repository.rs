@@ -3,10 +3,8 @@ use diesel::PgConnection;
 use diesel::prelude::*;
 
 use crate::errors::InfrastructureError;
-use crate::infrastructure::db::models::CreateWorkspaceRow;
-use crate::infrastructure::db::models::WorkspaceRow;
+use crate::infrastructure::db::models::{CreateWorkspaceRow, WorkspaceRow};
 use crate::infrastructure::db::schema::workspaces;
-
 use crate::models::workspace::{CreateWorkspace, Workspace};
 
 pub struct WorkspaceRepository {
@@ -28,18 +26,8 @@ impl WorkspaceRepository {
             .await
             .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?;
 
-        let create_workspace_row = CreateWorkspaceRow {
-            name: workspace_payload.name,
-            owner_id: workspace_payload.owner_id,
-        };
-
         let created_workspace = connection
-            .interact(|conn| {
-                diesel::insert_into(workspaces::table)
-                    .values(create_workspace_row)
-                    .returning(WorkspaceRow::as_returning())
-                    .get_result::<WorkspaceRow>(conn)
-            })
+            .interact(|conn| Self::insert_workspace(conn, workspace_payload))
             .await
             .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
             .map_err(|e| InfrastructureError::Query(e.to_string()))?;
@@ -47,10 +35,32 @@ impl WorkspaceRepository {
         Ok(Workspace {
             id: created_workspace.id,
             name: created_workspace.name,
-            owner_id: created_workspace.id,
+            owner_id: created_workspace.owner_id,
             created_at: created_workspace.created_at.to_string(),
             updated_at: created_workspace.updated_at.to_string(),
             deleted_at: created_workspace.deleted_at.map(|d| d.to_string()),
         })
+    }
+
+    pub fn create_workspace_in_tx(
+        conn: &mut PgConnection,
+        workspace_payload: CreateWorkspace,
+    ) -> Result<WorkspaceRow, diesel::result::Error> {
+        Self::insert_workspace(conn, workspace_payload)
+    }
+
+    fn insert_workspace(
+        conn: &mut PgConnection,
+        workspace_payload: CreateWorkspace,
+    ) -> Result<WorkspaceRow, diesel::result::Error> {
+        let create_workspace_row = CreateWorkspaceRow {
+            name: workspace_payload.name,
+            owner_id: workspace_payload.owner_id,
+        };
+
+        diesel::insert_into(workspaces::table)
+            .values(create_workspace_row)
+            .returning(WorkspaceRow::as_returning())
+            .get_result(conn)
     }
 }
