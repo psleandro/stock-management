@@ -72,6 +72,7 @@ impl ProductsRepository {
 
     pub async fn get_product_by_id(
         &self,
+        workspace_id: i32,
         product_id: i32,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
@@ -84,6 +85,7 @@ impl ProductsRepository {
             .interact(move |conn| {
                 products::table
                     .filter(products::deleted_at.is_null())
+                    .filter(products::workspace_id.eq(workspace_id))
                     .find(product_id)
                     .first::<ProductRow>(conn)
                     .optional()
@@ -130,6 +132,7 @@ impl ProductsRepository {
 
     pub async fn update_product(
         &self,
+        workspace_id: i32,
         product_id: i32,
         product: UpdateProduct,
     ) -> Result<Option<Product>, InfrastructureError> {
@@ -154,6 +157,7 @@ impl ProductsRepository {
                 diesel::update(
                     products::table
                         .filter(products::deleted_at.is_null())
+                        .filter(products::workspace_id.eq(workspace_id))
                         .find(product_id),
                 )
                 .set((&update_product_row, products::updated_at.eq(now)))
@@ -170,6 +174,7 @@ impl ProductsRepository {
 
     pub async fn delete_product(
         &self,
+        workspace_id: i32,
         product_id: i32,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
@@ -182,11 +187,15 @@ impl ProductsRepository {
 
         let deleted_product = connection
             .interact(move |conn| {
-                diesel::update(products::table.find(product_id))
-                    .set(products::deleted_at.eq(Some(now)))
-                    .returning(ProductRow::as_returning())
-                    .get_result(conn)
-                    .optional()
+                diesel::update(
+                    products::table
+                        .filter(products::workspace_id.eq(workspace_id))
+                        .find(product_id),
+                )
+                .set(products::deleted_at.eq(Some(now)))
+                .returning(ProductRow::as_returning())
+                .get_result(conn)
+                .optional()
             })
             .await
             .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?

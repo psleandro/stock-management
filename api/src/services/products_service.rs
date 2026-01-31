@@ -35,12 +35,12 @@ impl ProductsService {
 
     pub async fn get_product(
         &self,
-        _user_id: i32,
+        workspace_id: i32,
         product_id: i32,
     ) -> Result<Product, ApplicationError> {
         let product = self
             .products_repository
-            .get_product_by_id(product_id)
+            .get_product_by_id(workspace_id, product_id)
             .await?;
 
         match product {
@@ -73,7 +73,7 @@ impl ProductsService {
 
     pub async fn update_product(
         &self,
-        _user_id: i32,
+        workspace_id: i32,
         product_id: i32,
         payload: UpdateProductDto,
     ) -> Result<Product, ApplicationError> {
@@ -87,7 +87,7 @@ impl ProductsService {
 
         let updated_product = self
             .products_repository
-            .update_product(product_id, update_product_data)
+            .update_product(workspace_id, product_id, update_product_data)
             .await?;
 
         match updated_product {
@@ -98,10 +98,13 @@ impl ProductsService {
 
     pub async fn delete_product(
         &self,
-        _user_id: i32,
+        workspace_id: i32,
         product_id: i32,
     ) -> Result<(), ApplicationError> {
-        let deleted_product = self.products_repository.delete_product(product_id).await?;
+        let deleted_product = self
+            .products_repository
+            .delete_product(workspace_id, product_id)
+            .await?;
 
         match deleted_product {
             Some(_) => Ok(()),

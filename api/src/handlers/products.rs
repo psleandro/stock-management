@@ -36,7 +36,7 @@ pub async fn get_product(
     user: AuthenticatedUser,
 ) -> Response {
     let products_service = ProductsService::new(state.db_pool.clone());
-    let response = products_service.get_product(user.user_id, id).await;
+    let response = products_service.get_product(user.workspace_id, id).await;
 
     match response {
         Ok(product) => (StatusCode::OK, Json(product)).into_response(),
@@ -68,7 +68,7 @@ pub async fn update_product(
 ) -> Response {
     let products_service = ProductsService::new(state.db_pool.clone());
     let response = products_service
-        .update_product(user.user_id, id, payload)
+        .update_product(user.workspace_id, id, payload)
         .await;
 
     match response {
@@ -84,7 +84,7 @@ pub async fn delete_product(
 ) -> Response {
     let products_service = ProductsService::new(state.db_pool.clone());
     let response = products_service
-        .delete_product(user.user_id, id as i32)
+        .delete_product(user.workspace_id, id as i32)
         .await;
 
     match response {
