@@ -8,6 +8,7 @@ use crate::infrastructure::db::models::UserRow;
 use crate::infrastructure::db::schema::users;
 
 use crate::infrastructure::db::schema::workspaces;
+use crate::models::ids::{UserId, WorkspaceId};
 use crate::models::user::{AuthUser, CreateUser, User};
 
 pub struct UserRepository {
@@ -67,10 +68,10 @@ impl UserRepository {
             .map_err(|e| InfrastructureError::Query(e.to_string()))?;
 
         Ok(user.map(|(u, workspace_id)| AuthUser {
-            id: u.id,
+            id: UserId(u.id),
             name: u.name,
             password_hash: u.password,
-            workspace_id: workspace_id,
+            workspace_id: WorkspaceId(workspace_id),
             email: u.email,
             created_at: u.created_at.to_string(),
             updated_at: u.updated_at.to_string(),
@@ -96,7 +97,7 @@ impl UserRepository {
 
     fn to_domain(row: UserRow) -> User {
         User {
-            id: row.id,
+            id: UserId(row.id),
             name: row.name,
             email: row.email,
             created_at: row.created_at.to_string(),

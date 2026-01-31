@@ -1,8 +1,10 @@
 use serde::Serialize;
 
+use crate::models::ids::{UserId, WorkspaceId};
+
 #[derive(Serialize)]
 pub struct User {
-    pub id: i32,
+    pub id: UserId,
     pub name: Option<String>,
     pub email: String,
     pub created_at: String,
@@ -17,11 +19,11 @@ pub struct CreateUser {
 }
 
 pub struct AuthUser {
-    pub id: i32,
+    pub id: UserId,
     pub name: Option<String>,
     pub email: String,
     pub password_hash: String,
-    pub workspace_id: i32,
+    pub workspace_id: WorkspaceId,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,

@@ -1,14 +1,14 @@
 use chrono::NaiveDateTime;
 use serde::Serialize;
 
-use crate::infrastructure::db::models::ProductRow;
+use crate::{infrastructure::db::models::ProductRow, models::ids::WorkspaceId};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Product {
     pub id: i32,
 
     #[serde(skip_serializing)]
-    pub workspace_id: i32,
+    pub workspace_id: WorkspaceId,
 
     pub name: String,
     pub unit: Option<String>,
@@ -26,7 +26,7 @@ impl From<ProductRow> for Product {
     fn from(row: ProductRow) -> Self {
         Product {
             id: row.id,
-            workspace_id: row.workspace_id,
+            workspace_id: WorkspaceId(row.workspace_id),
             name: row.name,
             unit: row.unit,
             brand: row.brand,
@@ -40,7 +40,7 @@ impl From<ProductRow> for Product {
 }
 
 pub struct CreateProduct {
-    pub workspace_id: i32,
+    pub workspace_id: WorkspaceId,
     pub name: String,
     pub unit: Option<String>,
     pub brand: Option<String>,

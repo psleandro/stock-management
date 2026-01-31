@@ -1,7 +1,9 @@
+use crate::models::ids::{UserId, WorkspaceId};
+
 pub struct Workspace {
-    pub id: i32,
+    pub id: WorkspaceId,
     pub name: Option<String>,
-    pub owner_id: i32,
+    pub owner_id: UserId,
     pub created_at: String,
     pub updated_at: String,
     pub deleted_at: Option<String>,
@@ -9,5 +11,5 @@ pub struct Workspace {
 
 pub struct CreateWorkspace {
     pub name: Option<String>,
-    pub owner_id: i32,
+    pub owner_id: UserId,
 }

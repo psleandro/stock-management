@@ -4,6 +4,7 @@ use diesel::PgConnection;
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::products_repository::ProductsRepository;
 use crate::models::dto::product_dto::{CreateProductDto, ListProductsParams, UpdateProductDto};
+use crate::models::ids::WorkspaceId;
 use crate::models::product::{CreateProduct, Product, UpdateProduct};
 
 pub struct ProductsService {
@@ -20,7 +21,7 @@ impl ProductsService {
 
     pub async fn list_products(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         params: ListProductsParams,
     ) -> Result<Vec<Product>, ApplicationError> {
         let search = params.search.unwrap_or_default();
@@ -35,7 +36,7 @@ impl ProductsService {
 
     pub async fn get_product(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         product_id: i32,
     ) -> Result<Product, ApplicationError> {
         let product = self
@@ -51,7 +52,7 @@ impl ProductsService {
 
     pub async fn create_product(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         payload: CreateProductDto,
     ) -> Result<Product, ApplicationError> {
         let create_product_data = CreateProduct {
@@ -73,7 +74,7 @@ impl ProductsService {
 
     pub async fn update_product(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         product_id: i32,
         payload: UpdateProductDto,
     ) -> Result<Product, ApplicationError> {
@@ -98,7 +99,7 @@ impl ProductsService {
 
     pub async fn delete_product(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         product_id: i32,
     ) -> Result<(), ApplicationError> {
         let deleted_product = self

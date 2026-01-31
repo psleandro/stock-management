@@ -6,6 +6,7 @@ use diesel::prelude::*;
 use crate::errors::InfrastructureError;
 use crate::infrastructure::db::models::{CreateProductRow, ProductRow, UpdateProductRow};
 use crate::infrastructure::db::schema::products;
+use crate::models::ids::WorkspaceId;
 use crate::models::product::UpdateProduct;
 use crate::models::product::{CreateProduct, Product};
 
@@ -20,7 +21,7 @@ impl ProductsRepository {
 
     pub async fn list_products(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         search: &str,
     ) -> Result<Vec<Product>, InfrastructureError> {
         let search = search.to_string();
@@ -37,7 +38,7 @@ impl ProductsRepository {
 
                 let mut products_query = products::table
                     .filter(products::deleted_at.is_null())
-                    .filter(products::workspace_id.eq(workspace_id))
+                    .filter(products::workspace_id.eq(workspace_id.value()))
                     .into_boxed();
 
                 let filter_expression = products::name
@@ -72,7 +73,7 @@ impl ProductsRepository {
 
     pub async fn get_product_by_id(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         product_id: i32,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
@@ -85,7 +86,7 @@ impl ProductsRepository {
             .interact(move |conn| {
                 products::table
                     .filter(products::deleted_at.is_null())
-                    .filter(products::workspace_id.eq(workspace_id))
+                    .filter(products::workspace_id.eq(workspace_id.value()))
                     .find(product_id)
                     .first::<ProductRow>(conn)
                     .optional()
@@ -108,7 +109,7 @@ impl ProductsRepository {
             .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
 
         let create_product_row = CreateProductRow {
-            workspace_id: new_product.workspace_id,
+            workspace_id: new_product.workspace_id.value(),
             name: new_product.name,
             unit: new_product.unit,
             brand: new_product.brand,
@@ -132,7 +133,7 @@ impl ProductsRepository {
 
     pub async fn update_product(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         product_id: i32,
         product: UpdateProduct,
     ) -> Result<Option<Product>, InfrastructureError> {
@@ -157,7 +158,7 @@ impl ProductsRepository {
                 diesel::update(
                     products::table
                         .filter(products::deleted_at.is_null())
-                        .filter(products::workspace_id.eq(workspace_id))
+                        .filter(products::workspace_id.eq(workspace_id.value()))
                         .find(product_id),
                 )
                 .set((&update_product_row, products::updated_at.eq(now)))
@@ -174,7 +175,7 @@ impl ProductsRepository {
 
     pub async fn delete_product(
         &self,
-        workspace_id: i32,
+        workspace_id: WorkspaceId,
         product_id: i32,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
@@ -189,7 +190,7 @@ impl ProductsRepository {
             .interact(move |conn| {
                 diesel::update(
                     products::table
-                        .filter(products::workspace_id.eq(workspace_id))
+                        .filter(products::workspace_id.eq(workspace_id.value()))
                         .find(product_id),
                 )
                 .set(products::deleted_at.eq(Some(now)))
