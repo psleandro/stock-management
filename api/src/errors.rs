@@ -4,6 +4,12 @@ use axum::{
 };
 
 #[derive(Debug)]
+pub enum PayloadError {
+    ValidationError(String),
+    InvalidJson(String),
+}
+
+#[derive(Debug)]
 pub enum AuthError {
     WrongCredentials,
     MissingCredentials,
@@ -21,9 +27,16 @@ pub enum InfrastructureError {
 }
 
 pub enum ApplicationError {
+    PayloadError(PayloadError),
     Auth(AuthError),
     Infrastructure(InfrastructureError),
     NotFound,
+}
+
+impl From<PayloadError> for ApplicationError {
+    fn from(error: PayloadError) -> Self {
+        ApplicationError::PayloadError(error)
+    }
 }
 
 impl From<AuthError> for ApplicationError {
@@ -41,6 +54,10 @@ impl From<InfrastructureError> for ApplicationError {
 impl IntoResponse for ApplicationError {
     fn into_response(self) -> Response {
         match self {
+            ApplicationError::PayloadError(error) => match error {
+                PayloadError::ValidationError(e) => (StatusCode::BAD_REQUEST, e).into_response(),
+                PayloadError::InvalidJson(e) => (StatusCode::BAD_REQUEST, e).into_response(),
+            },
             ApplicationError::Auth(error) => match error {
                 AuthError::WrongCredentials => {
                     (StatusCode::UNAUTHORIZED, "Wrong Credentials").into_response()
