@@ -15,6 +15,7 @@ pub enum AuthError {
     MissingCredentials,
     TokenCreation,
     InvalidToken,
+    MissingToken,
 }
 
 #[derive(Debug)]
@@ -26,6 +27,7 @@ pub enum InfrastructureError {
     Unexpected(String),
 }
 
+#[derive(Debug)]
 pub enum ApplicationError {
     PayloadError(PayloadError),
     Auth(AuthError),
@@ -67,6 +69,9 @@ impl IntoResponse for ApplicationError {
                 }
                 AuthError::TokenCreation => {
                     (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error").into_response()
+                }
+                AuthError::MissingToken => {
+                    (StatusCode::UNAUTHORIZED, "Missing Authorization header").into_response()
                 }
                 AuthError::InvalidToken => {
                     (StatusCode::BAD_REQUEST, "Invalid token").into_response()

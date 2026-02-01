@@ -41,3 +41,23 @@ impl From<AuthUser> for User {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    impl AuthUser {
+        pub fn mock() -> Self {
+            AuthUser {
+                id: UserId(1),
+                name: Some("John Doe".to_string()),
+                email: "teste@example.com".to_string(),
+                password_hash: "$2b$12$examplehashforpassword1234567890".to_string(),
+                workspace_id: WorkspaceId(1),
+                created_at: "2026-01-31T12:00:00Z".to_string(),
+                updated_at: "2026-01-31T12:00:00Z".to_string(),
+                deleted_at: None,
+            }
+        }
+    }
+}

@@ -8,7 +8,7 @@ pub struct JwtService {
     jwt_secret: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct JwtClaims {
     pub sub: String,
     pub workspace_id: String,
@@ -51,5 +51,48 @@ impl JwtService {
         )?;
 
         Ok(token_data.claims)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generates_token_with_correct_claims() {
+        let mocked_user = AuthUser::mock();
+        let jwt_secret = String::from("S3CR3T");
+        let service = JwtService::new(jwt_secret);
+
+        let token = service
+            .generate_token(&mocked_user)
+            .expect("Token should be generated");
+
+        let token_claims = service
+            .get_claims_from_token(&token)
+            .expect("Claims should be decoded");
+
+        assert_eq!(token_claims.sub, mocked_user.id.value().to_string());
+
+        assert_eq!(
+            token_claims.workspace_id,
+            mocked_user.workspace_id.value().to_string()
+        )
+    }
+
+    #[test]
+    fn fails_to_decode_token_with_different_secret() {
+        let mocked_user = AuthUser::mock();
+        let jwt_secret = String::from("S3CR3T");
+
+        let service_secret = JwtService::new(jwt_secret);
+
+        let token_secret = service_secret.generate_token(&mocked_user).unwrap();
+
+        let service_with_other_secret = JwtService::new("different_secret".to_string());
+
+        let claims_result = service_with_other_secret.get_claims_from_token(&token_secret);
+
+        assert!(claims_result.is_err());
     }
 }
