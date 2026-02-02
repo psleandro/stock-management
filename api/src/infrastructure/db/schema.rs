@@ -1,6 +1,17 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    places (id) {
+        id -> Int4,
+        workspace_id -> Int4,
+        name -> Text,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+        deleted_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     products (id) {
         id -> Int4,
         workspace_id -> Int4,
@@ -38,7 +49,8 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(places -> workspaces (workspace_id));
 diesel::joinable!(products -> workspaces (workspace_id));
 diesel::joinable!(workspaces -> users (owner_id));
 
-diesel::allow_tables_to_appear_in_same_query!(products, users, workspaces,);
+diesel::allow_tables_to_appear_in_same_query!(places, products, users, workspaces,);

@@ -1,5 +1,6 @@
 pub mod db;
 pub mod models;
+pub mod places_repository;
 pub mod products_repository;
 pub mod schema;
 pub mod transaction;
