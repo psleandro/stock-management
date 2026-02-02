@@ -24,10 +24,10 @@ pub struct CreateUserRow {
     pub password: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Associations)]
 #[diesel(table_name=workspaces)]
+#[diesel(belongs_to(UserRow, foreign_key = owner_id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[diesel(belongs_to(User))]
 pub struct WorkspaceRow {
     pub id: i32,
     pub name: Option<String>,
@@ -44,9 +44,10 @@ pub struct CreateWorkspaceRow {
     pub owner_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
 #[diesel(table_name=products)]
+#[diesel(belongs_to(WorkspaceRow, foreign_key = workspace_id))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ProductRow {
     pub id: i32,
     pub workspace_id: i32,
@@ -81,9 +82,10 @@ pub struct UpdateProductRow {
     pub observation: Option<String>,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
 #[diesel(table_name=places)]
+#[diesel(belongs_to(WorkspaceRow, foreign_key = workspace_id))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct PlaceRow {
     pub id: i32,
     pub workspace_id: i32,
