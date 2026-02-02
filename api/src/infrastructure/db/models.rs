@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
-use crate::infrastructure::db::schema::{places, products, users, workspaces};
+use crate::infrastructure::db::schema::{places, products, suppliers, users, workspaces};
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name=users)]
@@ -105,5 +105,31 @@ pub struct CreatePlaceRow {
 #[derive(AsChangeset)]
 #[diesel(table_name=places)]
 pub struct UpdatePlaceRow {
+    pub name: Option<String>,
+}
+
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(table_name=suppliers)]
+#[diesel(belongs_to(WorkspaceRow, foreign_key = workspace_id))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct SupplierRow {
+    pub id: i32,
+    pub workspace_id: i32,
+    pub name: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+    pub deleted_at: Option<NaiveDateTime>,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name=suppliers)]
+pub struct CreateSupplierRow {
+    pub name: String,
+    pub workspace_id: i32,
+}
+
+#[derive(AsChangeset)]
+#[diesel(table_name=suppliers)]
+pub struct UpdateSupplierRow {
     pub name: Option<String>,
 }
