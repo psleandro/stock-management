@@ -19,6 +19,12 @@ pub enum AuthError {
 }
 
 #[derive(Debug)]
+pub enum DomainError {
+    ProductNotFound,
+    SupplierNotFound,
+}
+
+#[derive(Debug)]
 pub enum InfrastructureError {
     Connection(String),
     Query(String),
@@ -32,6 +38,7 @@ pub enum ApplicationError {
     PayloadError(PayloadError),
     Auth(AuthError),
     Infrastructure(InfrastructureError),
+    DomainError(DomainError),
     NotFound,
 }
 
@@ -50,6 +57,12 @@ impl From<AuthError> for ApplicationError {
 impl From<InfrastructureError> for ApplicationError {
     fn from(error: InfrastructureError) -> Self {
         ApplicationError::Infrastructure(error)
+    }
+}
+
+impl From<DomainError> for ApplicationError {
+    fn from(error: DomainError) -> Self {
+        ApplicationError::DomainError(error)
     }
 }
 
@@ -92,6 +105,14 @@ impl IntoResponse for ApplicationError {
             ApplicationError::NotFound => {
                 (StatusCode::NOT_FOUND, "Resource Not Found").into_response()
             }
+            ApplicationError::DomainError(error) => match error {
+                DomainError::ProductNotFound => {
+                    (StatusCode::BAD_REQUEST, "Product does not exist").into_response()
+                }
+                DomainError::SupplierNotFound => {
+                    (StatusCode::BAD_REQUEST, "Supplier does not exist").into_response()
+                }
+            },
         }
     }
 }

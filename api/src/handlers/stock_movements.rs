@@ -1,0 +1,33 @@
+use std::sync::Arc;
+
+use axum::{
+    Json,
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+
+use crate::{
+    app::AppState,
+    extractors::{ValidatedJson, authenticated_user::AuthenticatedUser},
+    models::dto::stock_movement_dto::StockMovementEntryDto,
+    services::stock_movements_service::StockMovementsService,
+};
+
+pub async fn create_stock_entry(
+    State(state): State<Arc<AppState>>,
+    user: AuthenticatedUser,
+    ValidatedJson(payload): ValidatedJson<StockMovementEntryDto>,
+) -> Response {
+    let stock_movements_service = StockMovementsService::new(state.db_pool.clone());
+    let response = stock_movements_service
+        .create_stock_entry(user.workspace_id, payload)
+        .await;
+
+    match response {
+        Ok(created_stock_movement) => {
+            (StatusCode::CREATED, Json(created_stock_movement)).into_response()
+        }
+        Err(error) => error.into_response(),
+    }
+}

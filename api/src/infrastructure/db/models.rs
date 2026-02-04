@@ -1,7 +1,9 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
-use crate::infrastructure::db::schema::{places, products, suppliers, users, workspaces};
+use crate::infrastructure::db::schema::{
+    places, products, stock_movements, suppliers, users, workspaces,
+};
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name=users)]
@@ -132,4 +134,34 @@ pub struct CreateSupplierRow {
 #[diesel(table_name=suppliers)]
 pub struct UpdateSupplierRow {
     pub name: Option<String>,
+}
+
+#[derive(Queryable, Selectable)]
+#[diesel(table_name=stock_movements)]
+#[diesel(belongs_to(WorkspaceRow, foreign_key = product_id ))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct StockMovementRow {
+    pub id: i32,
+    pub movement_date: NaiveDateTime,
+    pub product_id: i32,
+    pub supplier_id: Option<i32>,
+    pub place_id: Option<i32>,
+    pub quantity: i32,
+    pub unit_cost_in_cents: Option<i32>,
+    pub invoice_number: Option<String>,
+    pub notes: Option<String>,
+    pub created_at: NaiveDateTime,
+    pub deleted_at: Option<NaiveDateTime>,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name=stock_movements)]
+pub struct StockMovementEntryRow {
+    pub movement_date: NaiveDateTime,
+    pub product_id: i32,
+    pub supplier_id: Option<i32>,
+    pub quantity: i32,
+    pub unit_cost_in_cents: Option<i32>,
+    pub invoice_number: Option<String>,
+    pub notes: Option<String>,
 }
