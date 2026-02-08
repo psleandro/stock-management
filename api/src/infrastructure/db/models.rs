@@ -165,3 +165,13 @@ pub struct StockMovementEntryRow {
     pub invoice_number: Option<String>,
     pub notes: Option<String>,
 }
+
+#[derive(Insertable)]
+#[diesel(table_name=stock_movements)]
+pub struct StockMovementExitRow {
+    pub movement_date: NaiveDateTime,
+    pub product_id: i32,
+    pub place_id: Option<i32>,
+    pub quantity: i32,
+    pub notes: Option<String>,
+}

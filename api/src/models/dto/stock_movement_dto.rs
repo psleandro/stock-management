@@ -20,3 +20,17 @@ pub struct StockMovementEntryDto {
 
     pub notes: Option<String>,
 }
+
+#[derive(Deserialize, Validate)]
+pub struct StockMovementExitDto {
+    pub movement_date: NaiveDateTime,
+
+    pub product_id: i32,
+
+    pub place_id: i32,
+
+    #[validate(range(min = 1, message = "needs to be greater than zero"))]
+    pub quantity: i32,
+
+    pub notes: Option<String>,
+}

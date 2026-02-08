@@ -3,8 +3,10 @@ use diesel::PgConnection;
 use diesel::prelude::*;
 
 use crate::errors::InfrastructureError;
+use crate::infrastructure::db::models::StockMovementExitRow;
 use crate::infrastructure::db::models::{StockMovementEntryRow, StockMovementRow};
 use crate::infrastructure::db::schema::stock_movements;
+use crate::models::stock_movement::StockMovementExit;
 use crate::models::stock_movement::{StockMovement, StockMovementEntry};
 
 pub struct StockMovementsRepository {
@@ -42,6 +44,50 @@ impl StockMovementsRepository {
                     .values(create_stock_movement_row)
                     .returning(StockMovementRow::as_returning())
                     .get_result::<StockMovementRow>(conn)
+            })
+            .await
+            .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?
+            .map_err(|e| InfrastructureError::Query(e.to_string()))?;
+
+        Ok(StockMovement {
+            id: created_stock_movement.id,
+            movement_date: created_stock_movement.movement_date,
+            product_id: created_stock_movement.product_id,
+            supplier_id: created_stock_movement.supplier_id,
+            place_id: created_stock_movement.place_id,
+            quantity: created_stock_movement.quantity,
+            unit_cost_in_cents: created_stock_movement.unit_cost_in_cents,
+            invoice_number: created_stock_movement.invoice_number,
+            notes: created_stock_movement.notes,
+            created_at: created_stock_movement.created_at,
+            deleted_at: created_stock_movement.deleted_at,
+        })
+    }
+
+    pub async fn create_stock_exit(
+        &self,
+        new_stock_movement_exit: StockMovementExit,
+    ) -> Result<StockMovement, InfrastructureError> {
+        let connection = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| InfrastructureError::Connection(e.to_string()))?;
+
+        let create_stock_movement_row = StockMovementExitRow {
+            movement_date: new_stock_movement_exit.movement_date,
+            product_id: new_stock_movement_exit.product_id,
+            place_id: Some(new_stock_movement_exit.place_id),
+            quantity: new_stock_movement_exit.quantity,
+            notes: new_stock_movement_exit.notes,
+        };
+
+        let created_stock_movement = connection
+            .interact(|conn| {
+                diesel::insert_into(stock_movements::table)
+                    .values(create_stock_movement_row)
+                    .returning(StockMovementRow::as_returning())
+                    .get_result(conn)
             })
             .await
             .map_err(|e| InfrastructureError::Unexpected(e.to_string()))?

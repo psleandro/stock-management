@@ -27,3 +27,11 @@ pub struct StockMovementEntry {
     pub invoice_number: String,
     pub notes: Option<String>,
 }
+
+pub struct StockMovementExit {
+    pub movement_date: NaiveDateTime,
+    pub product_id: i32,
+    pub place_id: i32,
+    pub quantity: i32,
+    pub notes: Option<String>,
+}

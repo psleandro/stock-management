@@ -22,6 +22,8 @@ pub enum AuthError {
 pub enum DomainError {
     ProductNotFound,
     SupplierNotFound,
+    PlaceNotFound,
+    NotEnoughStock,
 }
 
 #[derive(Debug)]
@@ -112,6 +114,14 @@ impl IntoResponse for ApplicationError {
                 DomainError::SupplierNotFound => {
                     (StatusCode::BAD_REQUEST, "Supplier does not exist").into_response()
                 }
+                DomainError::PlaceNotFound => {
+                    (StatusCode::BAD_REQUEST, "Place does not exist").into_response()
+                }
+                DomainError::NotEnoughStock => (
+                    StatusCode::BAD_REQUEST,
+                    "Not enough stock available to complete this action",
+                )
+                    .into_response(),
             },
         }
     }
