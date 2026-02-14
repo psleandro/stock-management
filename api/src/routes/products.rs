@@ -6,6 +6,7 @@ use crate::app::AppState;
 use crate::handlers::products::{
     create_product, delete_product, get_product, list_products, update_product,
 };
+use crate::handlers::stock::list_products_with_stock;
 
 pub fn products_routes() -> Router<Arc<AppState>> {
     Router::new()
@@ -14,4 +15,5 @@ pub fn products_routes() -> Router<Arc<AppState>> {
         .route("/", post(create_product))
         .route("/{product_id}", patch(update_product))
         .route("/{product_id}", delete(delete_product))
+        .route("/stock", get(list_products_with_stock))
 }

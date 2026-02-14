@@ -55,3 +55,9 @@ pub struct UpdateProduct {
     pub min_stock: Option<i32>,
     pub observation: Option<String>,
 }
+
+#[derive(Serialize)]
+pub struct Stock {
+    pub min: i32,
+    pub current: i64,
+}

@@ -3,9 +3,9 @@ use diesel::PgConnection;
 
 use crate::errors::{ApplicationError, DomainError};
 use crate::infrastructure::db::places_repository::PlacesRepository;
-use crate::infrastructure::db::product_stock_repository::ProductStockRepository;
 use crate::infrastructure::db::products_repository::ProductsRepository;
 use crate::infrastructure::db::stock_movements_repository::StockMovementsRepository;
+use crate::infrastructure::db::stock_repository::ProductStockRepository;
 use crate::infrastructure::db::suppliers_repository::SuppliersRepository;
 use crate::models::dto::stock_movement_dto::{StockMovementEntryDto, StockMovementExitDto};
 use crate::models::ids::WorkspaceId;
