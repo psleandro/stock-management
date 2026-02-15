@@ -1,5 +1,11 @@
 // @generated automatically by Diesel CLI.
 
+pub mod sql_types {
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "base_unit"))]
+    pub struct BaseUnit;
+}
+
 diesel::table! {
     places (id) {
         id -> Int4,
@@ -12,13 +18,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::BaseUnit;
+
     products (id) {
         id -> Int4,
         workspace_id -> Int4,
         name -> Text,
-        unit -> Nullable<Text>,
+        base_unit -> BaseUnit,
         brand -> Nullable<Text>,
-        min_stock -> Int4,
+        min_stock -> Int8,
         observation -> Nullable<Text>,
         created_at -> Timestamp,
         updated_at -> Timestamp,

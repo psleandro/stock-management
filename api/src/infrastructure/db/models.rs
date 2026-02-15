@@ -1,6 +1,10 @@
 use chrono::NaiveDateTime;
+use diesel::deserialize::FromSqlRow;
+use diesel::expression::AsExpression;
+use diesel::pg::Pg;
 use diesel::prelude::*;
 
+use crate::infrastructure::db::schema::sql_types::BaseUnit as SqlBaseUnit;
 use crate::infrastructure::db::schema::{
     places, products, stock_movements, suppliers, users, workspaces,
 };
@@ -46,6 +50,41 @@ pub struct CreateWorkspaceRow {
     pub owner_id: i32,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, AsExpression, FromSqlRow)]
+#[diesel(sql_type = SqlBaseUnit)]
+pub enum BaseUnitModel {
+    Unit,
+    Milligram,
+    Milliliter,
+}
+
+impl diesel::serialize::ToSql<SqlBaseUnit, Pg> for BaseUnitModel {
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, Pg>,
+    ) -> diesel::serialize::Result {
+        let s = match self {
+            BaseUnitModel::Unit => "unit",
+            BaseUnitModel::Milligram => "milligram",
+            BaseUnitModel::Milliliter => "milliliter",
+        };
+        diesel::serialize::ToSql::<diesel::sql_types::Text, Pg>::to_sql(s, out)
+    }
+}
+
+impl diesel::deserialize::FromSql<SqlBaseUnit, Pg> for BaseUnitModel {
+    fn from_sql(pg_value: diesel::pg::PgValue<'_>) -> diesel::deserialize::Result<Self> {
+        let str_bytes = pg_value.as_bytes();
+
+        match str_bytes {
+            b"unit" => Ok(BaseUnitModel::Unit),
+            b"milligram" => Ok(BaseUnitModel::Milligram),
+            b"milliliter" => Ok(BaseUnitModel::Milliliter),
+            _ => Err(format!("Unknown variant: {:?}", str_bytes).into()),
+        }
+    }
+}
+
 #[derive(Queryable, Selectable, Identifiable, Associations)]
 #[diesel(table_name=products)]
 #[diesel(belongs_to(WorkspaceRow, foreign_key = workspace_id))]
@@ -54,9 +93,9 @@ pub struct ProductRow {
     pub id: i32,
     pub workspace_id: i32,
     pub name: String,
-    pub unit: Option<String>,
+    pub base_unit: BaseUnitModel,
     pub brand: Option<String>,
-    pub min_stock: i32,
+    pub min_stock: i64,
     pub observation: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -68,9 +107,9 @@ pub struct ProductRow {
 pub struct CreateProductRow {
     pub workspace_id: i32,
     pub name: String,
-    pub unit: Option<String>,
+    pub base_unit: BaseUnitModel,
     pub brand: Option<String>,
-    pub min_stock: i32,
+    pub min_stock: i64,
     pub observation: Option<String>,
 }
 
@@ -78,9 +117,9 @@ pub struct CreateProductRow {
 #[diesel(table_name=products)]
 pub struct UpdateProductRow {
     pub name: Option<String>,
-    pub unit: Option<String>,
+    pub base_unit: Option<BaseUnitModel>,
     pub brand: Option<String>,
-    pub min_stock: Option<i32>,
+    pub min_stock: Option<i64>,
     pub observation: Option<String>,
 }
 

@@ -43,15 +43,11 @@ impl ProductStockRepository {
                 let filter_expression = products::name
                     .ilike(&search_like)
                     .or(products::brand.ilike(&search_like))
-                    .or(products::observation.ilike(&search_like))
-                    .or(products::unit.ilike(&search_like));
+                    .or(products::observation.ilike(&search_like));
 
                 if let Ok(search_number) = search.parse::<i32>() {
-                    products_query = products_query.filter(
-                        filter_expression
-                            .or(products::id.eq(search_number))
-                            .or(products::min_stock.eq(search_number)),
-                    );
+                    products_query =
+                        products_query.filter(filter_expression.or(products::id.eq(search_number)));
                 } else {
                     products_query = products_query.filter(filter_expression);
                 }

@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use validator::Validate;
 
+use crate::models::product::BaseUnit;
+
 #[derive(Deserialize)]
 pub struct ListProductsParams {
     pub search: Option<String>,
@@ -10,9 +12,9 @@ pub struct ListProductsParams {
 pub struct CreateProductDto {
     #[validate(length(min = 2, message = "must be at least 2 characters long"))]
     pub name: String,
-    pub unit: Option<String>,
+    pub base_unit: BaseUnit,
     pub brand: Option<String>,
-    pub min_stock: i32,
+    pub min_stock: i64,
     pub observation: Option<String>,
 }
 
@@ -20,8 +22,8 @@ pub struct CreateProductDto {
 pub struct UpdateProductDto {
     #[validate(length(min = 2, message = "must be at least 2 characters long"))]
     pub name: Option<String>,
-    pub unit: Option<String>,
+    pub base_unit: Option<BaseUnit>,
     pub brand: Option<String>,
-    pub min_stock: Option<i32>,
+    pub min_stock: Option<i64>,
     pub observation: Option<String>,
 }

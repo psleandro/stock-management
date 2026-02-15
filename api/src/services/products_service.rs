@@ -58,7 +58,7 @@ impl ProductsService {
         let create_product_data = CreateProduct {
             workspace_id: workspace_id,
             name: payload.name,
-            unit: payload.unit,
+            base_unit: payload.base_unit,
             brand: payload.brand,
             min_stock: payload.min_stock,
             observation: payload.observation,
@@ -80,7 +80,7 @@ impl ProductsService {
     ) -> Result<Product, ApplicationError> {
         let update_product_data = UpdateProduct {
             name: payload.name,
-            unit: payload.unit,
+            base_unit: payload.base_unit,
             brand: payload.brand,
             min_stock: payload.min_stock,
             observation: payload.observation,

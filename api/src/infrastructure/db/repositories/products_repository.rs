@@ -44,15 +44,11 @@ impl ProductsRepository {
                 let filter_expression = products::name
                     .ilike(&search_like)
                     .or(products::brand.ilike(&search_like))
-                    .or(products::observation.ilike(&search_like))
-                    .or(products::unit.ilike(&search_like));
+                    .or(products::observation.ilike(&search_like));
 
                 if let Ok(search_number) = search.parse::<i32>() {
-                    products_query = products_query.filter(
-                        filter_expression
-                            .or(products::id.eq(search_number))
-                            .or(products::min_stock.eq(search_number)),
-                    );
+                    products_query =
+                        products_query.filter(filter_expression.or(products::id.eq(search_number)));
                 } else {
                     products_query = products_query.filter(filter_expression);
                 }
@@ -111,7 +107,7 @@ impl ProductsRepository {
         let create_product_row = CreateProductRow {
             workspace_id: new_product.workspace_id.value(),
             name: new_product.name,
-            unit: new_product.unit,
+            base_unit: new_product.base_unit.into(),
             brand: new_product.brand,
             min_stock: new_product.min_stock,
             observation: new_product.observation,
@@ -145,7 +141,7 @@ impl ProductsRepository {
 
         let update_product_row = UpdateProductRow {
             name: product.name,
-            unit: product.unit,
+            base_unit: product.base_unit.map(|v| v.into()),
             brand: product.brand,
             min_stock: product.min_stock,
             observation: product.observation,
