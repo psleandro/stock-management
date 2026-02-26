@@ -11,6 +11,7 @@ use crate::models::dto::stock_movement_dto::{StockMovementEntryDto, StockMovemen
 use crate::models::ids::WorkspaceId;
 use crate::models::stock_movement::{StockMovement, StockMovementEntry, StockMovementExit};
 
+#[derive(Clone)]
 pub struct StockMovementsService {
     pub products_repository: ProductsRepository,
     pub stock_movements_repository: StockMovementsRepository,

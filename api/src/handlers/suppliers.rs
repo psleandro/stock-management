@@ -11,7 +11,6 @@ use crate::{
     app::AppState,
     extractors::{ValidatedJson, authenticated_user::AuthenticatedUser},
     models::dto::supplier_dto::{CreateSupplierDto, ListSuppliersParams, UpdateSupplierDto},
-    services::suppliers_service::SuppliersService,
 };
 
 pub async fn list_suppliers(
@@ -19,8 +18,8 @@ pub async fn list_suppliers(
     user: AuthenticatedUser,
     Query(params): Query<ListSuppliersParams>,
 ) -> Response {
-    let suppliers_service = SuppliersService::new(state.db_pool.clone());
-    let response = suppliers_service
+    let response = state
+        .suppliers_service
         .list_suppliers(user.workspace_id, params)
         .await;
 
@@ -35,8 +34,10 @@ pub async fn get_supplier(
     Path(id): Path<i32>,
     user: AuthenticatedUser,
 ) -> Response {
-    let suppliers_service = SuppliersService::new(state.db_pool.clone());
-    let response = suppliers_service.get_supplier(user.workspace_id, id).await;
+    let response = state
+        .suppliers_service
+        .get_supplier(user.workspace_id, id)
+        .await;
 
     match response {
         Ok(supplier) => (StatusCode::OK, Json(supplier)).into_response(),
@@ -49,8 +50,8 @@ pub async fn create_supplier(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<CreateSupplierDto>,
 ) -> Response {
-    let suppliers_service = SuppliersService::new(state.db_pool.clone());
-    let response = suppliers_service
+    let response = state
+        .suppliers_service
         .create_supplier(user.workspace_id, payload)
         .await;
 
@@ -66,8 +67,8 @@ pub async fn update_supplier(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<UpdateSupplierDto>,
 ) -> Response {
-    let suppliers_service = SuppliersService::new(state.db_pool.clone());
-    let response = suppliers_service
+    let response = state
+        .suppliers_service
         .update_supplier(user.workspace_id, id, payload)
         .await;
 
@@ -82,8 +83,8 @@ pub async fn delete_supplier(
     Path(id): Path<u64>,
     user: AuthenticatedUser,
 ) -> Response {
-    let suppliers_service = SuppliersService::new(state.db_pool.clone());
-    let response = suppliers_service
+    let response = state
+        .suppliers_service
         .delete_supplier(user.workspace_id, id as i32)
         .await;
 

@@ -3,6 +3,7 @@ use diesel::Connection;
 
 use crate::errors::InfrastructureError;
 
+#[derive(Clone)]
 pub struct TransactionRunner {
     pool: Pool<Manager<diesel::PgConnection>>,
 }

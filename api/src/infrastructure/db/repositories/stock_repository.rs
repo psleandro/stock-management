@@ -9,6 +9,7 @@ use crate::infrastructure::db::schema::{products, stock_movements};
 use crate::models::ids::WorkspaceId;
 use crate::models::product::{Product, Stock};
 
+#[derive(Clone)]
 pub struct ProductStockRepository {
     pub pool: Pool<Manager<PgConnection>>,
 }

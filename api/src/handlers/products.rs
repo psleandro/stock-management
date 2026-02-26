@@ -11,7 +11,6 @@ use crate::{
     app::AppState,
     extractors::{ValidatedJson, authenticated_user::AuthenticatedUser},
     models::dto::product_dto::{CreateProductDto, ListProductsParams, UpdateProductDto},
-    services::products_service::ProductsService,
 };
 
 pub async fn list_products(
@@ -19,8 +18,8 @@ pub async fn list_products(
     user: AuthenticatedUser,
     Query(params): Query<ListProductsParams>,
 ) -> Response {
-    let products_service = ProductsService::new(state.db_pool.clone());
-    let response = products_service
+    let response = state
+        .products_service
         .list_products(user.workspace_id, params)
         .await;
 
@@ -35,8 +34,10 @@ pub async fn get_product(
     Path(id): Path<i32>,
     user: AuthenticatedUser,
 ) -> Response {
-    let products_service = ProductsService::new(state.db_pool.clone());
-    let response = products_service.get_product(user.workspace_id, id).await;
+    let response = state
+        .products_service
+        .get_product(user.workspace_id, id)
+        .await;
 
     match response {
         Ok(product) => (StatusCode::OK, Json(product)).into_response(),
@@ -49,8 +50,8 @@ pub async fn create_product(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<CreateProductDto>,
 ) -> Response {
-    let products_service = ProductsService::new(state.db_pool.clone());
-    let response = products_service
+    let response = state
+        .products_service
         .create_product(user.workspace_id, payload)
         .await;
 
@@ -66,8 +67,8 @@ pub async fn update_product(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<UpdateProductDto>,
 ) -> Response {
-    let products_service = ProductsService::new(state.db_pool.clone());
-    let response = products_service
+    let response = state
+        .products_service
         .update_product(user.workspace_id, id, payload)
         .await;
 
@@ -82,8 +83,8 @@ pub async fn delete_product(
     Path(id): Path<u64>,
     user: AuthenticatedUser,
 ) -> Response {
-    let products_service = ProductsService::new(state.db_pool.clone());
-    let response = products_service
+    let response = state
+        .products_service
         .delete_product(user.workspace_id, id as i32)
         .await;
 

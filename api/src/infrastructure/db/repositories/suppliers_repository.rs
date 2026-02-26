@@ -9,6 +9,7 @@ use crate::infrastructure::db::schema::suppliers;
 use crate::models::ids::WorkspaceId;
 use crate::models::supplier::{CreateSupplier, Supplier, UpdateSupplier};
 
+#[derive(Clone)]
 pub struct SuppliersRepository {
     pub pool: Pool<Manager<PgConnection>>,
 }

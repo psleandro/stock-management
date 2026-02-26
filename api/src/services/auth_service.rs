@@ -19,6 +19,7 @@ use crate::{
     infrastructure::db::transaction::TransactionRunner, models::dto::user_dto::SignInResponse,
 };
 
+#[derive(Clone)]
 pub struct AuthService {
     user_repository: UserRepository,
     transaction_runner: TransactionRunner,

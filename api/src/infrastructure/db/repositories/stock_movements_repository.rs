@@ -9,6 +9,7 @@ use crate::infrastructure::db::schema::stock_movements;
 use crate::models::stock_movement::StockMovementExit;
 use crate::models::stock_movement::{StockMovement, StockMovementEntry};
 
+#[derive(Clone)]
 pub struct StockMovementsRepository {
     pub pool: Pool<Manager<PgConnection>>,
 }

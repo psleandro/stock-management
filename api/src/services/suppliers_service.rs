@@ -7,6 +7,7 @@ use crate::models::dto::supplier_dto::{CreateSupplierDto, ListSuppliersParams, U
 use crate::models::ids::WorkspaceId;
 use crate::models::supplier::{CreateSupplier, Supplier, UpdateSupplier};
 
+#[derive(Clone)]
 pub struct SuppliersService {
     pub suppliers_repository: SuppliersRepository,
 }

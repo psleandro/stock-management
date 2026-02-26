@@ -9,7 +9,7 @@ use axum::{
 
 use crate::{
     app::AppState, extractors::authenticated_user::AuthenticatedUser,
-    models::dto::product_dto::ListProductsParams, services::stock_service::StockService,
+    models::dto::product_dto::ListProductsParams,
 };
 
 pub async fn list_products_with_stock(
@@ -17,9 +17,8 @@ pub async fn list_products_with_stock(
     user: AuthenticatedUser,
     Query(params): Query<ListProductsParams>,
 ) -> Response {
-    let stock_service = StockService::new(state.db_pool.clone());
-
-    let response = stock_service
+    let response = state
+        .stock_service
         .list_products_with_stock(user.workspace_id, params)
         .await;
 

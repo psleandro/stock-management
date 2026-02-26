@@ -11,6 +11,7 @@ use crate::infrastructure::db::schema::workspaces;
 use crate::models::ids::{UserId, WorkspaceId};
 use crate::models::user::{AuthUser, CreateUser, User};
 
+#[derive(Clone)]
 pub struct UserRepository {
     pub pool: Pool<Manager<PgConnection>>,
 }

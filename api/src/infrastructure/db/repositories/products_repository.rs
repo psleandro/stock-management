@@ -10,6 +10,7 @@ use crate::models::ids::WorkspaceId;
 use crate::models::product::UpdateProduct;
 use crate::models::product::{CreateProduct, Product};
 
+#[derive(Clone)]
 pub struct ProductsRepository {
     pub pool: Pool<Manager<PgConnection>>,
 }

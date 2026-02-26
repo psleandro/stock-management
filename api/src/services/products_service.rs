@@ -7,6 +7,7 @@ use crate::models::dto::product_dto::{CreateProductDto, ListProductsParams, Upda
 use crate::models::ids::WorkspaceId;
 use crate::models::product::{CreateProduct, Product, UpdateProduct};
 
+#[derive(Clone)]
 pub struct ProductsService {
     pub products_repository: ProductsRepository,
 }

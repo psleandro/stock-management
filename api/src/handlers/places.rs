@@ -11,7 +11,6 @@ use crate::{
     app::AppState,
     extractors::{ValidatedJson, authenticated_user::AuthenticatedUser},
     models::dto::place_dto::{CreatePlaceDto, ListPlacesParams, UpdatePlaceDto},
-    services::places_service::PlacesService,
 };
 
 pub async fn list_places(
@@ -19,8 +18,10 @@ pub async fn list_places(
     user: AuthenticatedUser,
     Query(params): Query<ListPlacesParams>,
 ) -> Response {
-    let places_service = PlacesService::new(state.db_pool.clone());
-    let response = places_service.list_places(user.workspace_id, params).await;
+    let response = state
+        .places_service
+        .list_places(user.workspace_id, params)
+        .await;
 
     match response {
         Ok(places_list) => (StatusCode::OK, Json(places_list)).into_response(),
@@ -33,8 +34,7 @@ pub async fn get_place(
     Path(id): Path<i32>,
     user: AuthenticatedUser,
 ) -> Response {
-    let places_service = PlacesService::new(state.db_pool.clone());
-    let response = places_service.get_place(user.workspace_id, id).await;
+    let response = state.places_service.get_place(user.workspace_id, id).await;
 
     match response {
         Ok(place) => (StatusCode::OK, Json(place)).into_response(),
@@ -47,8 +47,8 @@ pub async fn create_place(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<CreatePlaceDto>,
 ) -> Response {
-    let places_service = PlacesService::new(state.db_pool.clone());
-    let response = places_service
+    let response = state
+        .places_service
         .create_place(user.workspace_id, payload)
         .await;
 
@@ -64,8 +64,8 @@ pub async fn update_place(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<UpdatePlaceDto>,
 ) -> Response {
-    let places_service = PlacesService::new(state.db_pool.clone());
-    let response = places_service
+    let response = state
+        .places_service
         .update_place(user.workspace_id, id, payload)
         .await;
 
@@ -80,8 +80,8 @@ pub async fn delete_place(
     Path(id): Path<u64>,
     user: AuthenticatedUser,
 ) -> Response {
-    let places_service = PlacesService::new(state.db_pool.clone());
-    let response = places_service
+    let response = state
+        .places_service
         .delete_place(user.workspace_id, id as i32)
         .await;
 

@@ -7,6 +7,7 @@ use crate::models::dto::place_dto::{CreatePlaceDto, ListPlacesParams, UpdatePlac
 use crate::models::ids::WorkspaceId;
 use crate::models::place::{CreatePlace, Place, UpdatePlace};
 
+#[derive(Clone)]
 pub struct PlacesService {
     pub places_repository: PlacesRepository,
 }

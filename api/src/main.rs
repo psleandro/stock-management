@@ -2,7 +2,7 @@ use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
 use tokio::net::TcpListener;
 
-use crate::app::AppState;
+use crate::{app::build_app, infrastructure::db};
 
 pub mod app;
 pub mod errors;
@@ -17,9 +17,9 @@ pub mod services;
 async fn main() {
     dotenv().ok();
 
-    let app_state = AppState::new();
+    let db_pool = db::create_db_pool();
 
-    let app = routes::app_routes().with_state(app_state);
+    let app = build_app(db_pool);
 
     let port: u16 = env::var("PORT")
         .unwrap_or_else(|_| "8000".to_string())

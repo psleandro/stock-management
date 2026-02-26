@@ -10,6 +10,7 @@ use crate::{
     },
 };
 
+#[derive(Clone)]
 pub struct StockService {
     pub stock_repository: ProductStockRepository,
 }

@@ -9,6 +9,7 @@ use crate::infrastructure::db::schema::places;
 use crate::models::ids::WorkspaceId;
 use crate::models::place::{CreatePlace, Place, UpdatePlace};
 
+#[derive(Clone)]
 pub struct PlacesRepository {
     pub pool: Pool<Manager<PgConnection>>,
 }

@@ -11,7 +11,6 @@ use crate::{
     app::AppState,
     extractors::{ValidatedJson, authenticated_user::AuthenticatedUser},
     models::dto::stock_movement_dto::{StockMovementEntryDto, StockMovementExitDto},
-    services::stock_movements_service::StockMovementsService,
 };
 
 pub async fn create_stock_entry(
@@ -19,8 +18,8 @@ pub async fn create_stock_entry(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<StockMovementEntryDto>,
 ) -> Response {
-    let stock_movements_service = StockMovementsService::new(state.db_pool.clone());
-    let response = stock_movements_service
+    let response = state
+        .stock_movements_service
         .create_stock_entry(user.workspace_id, payload)
         .await;
 
@@ -37,9 +36,8 @@ pub async fn create_stock_exit(
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<StockMovementExitDto>,
 ) -> Response {
-    let stock_movements_service = StockMovementsService::new(state.db_pool.clone());
-
-    let response = stock_movements_service
+    let response = state
+        .stock_movements_service
         .create_stock_exit(user.workspace_id, payload)
         .await;
 
