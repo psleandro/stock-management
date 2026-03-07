@@ -1,6 +1,3 @@
-use deadpool_diesel::{Manager, Pool};
-use diesel::PgConnection;
-
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::places_repository::PlacesRepository;
 use crate::models::dto::place_dto::{CreatePlaceDto, ListPlacesParams, UpdatePlaceDto};
@@ -13,8 +10,7 @@ pub struct PlacesService {
 }
 
 impl PlacesService {
-    pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let places_repository = PlacesRepository::new(pool.clone());
+    pub fn new(places_repository: PlacesRepository) -> Self {
         Self { places_repository }
     }
 

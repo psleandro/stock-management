@@ -1,6 +1,3 @@
-use deadpool_diesel::{Manager, Pool};
-use diesel::PgConnection;
-
 use crate::errors::{ApplicationError, DomainError};
 use crate::infrastructure::db::places_repository::PlacesRepository;
 use crate::infrastructure::db::products_repository::ProductsRepository;
@@ -21,12 +18,13 @@ pub struct StockMovementsService {
 }
 
 impl StockMovementsService {
-    pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let products_repository = ProductsRepository::new(pool.clone());
-        let stock_movements_repository = StockMovementsRepository::new(pool.clone());
-        let product_stock_repository = ProductStockRepository::new(pool.clone());
-        let suppliers_repository = SuppliersRepository::new(pool.clone());
-        let places_repository = PlacesRepository::new(pool.clone());
+    pub fn new(
+        products_repository: ProductsRepository,
+        stock_movements_repository: StockMovementsRepository,
+        product_stock_repository: ProductStockRepository,
+        suppliers_repository: SuppliersRepository,
+        places_repository: PlacesRepository,
+    ) -> Self {
         Self {
             products_repository,
             stock_movements_repository,

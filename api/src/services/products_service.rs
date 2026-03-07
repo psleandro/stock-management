@@ -1,6 +1,3 @@
-use deadpool_diesel::{Manager, Pool};
-use diesel::PgConnection;
-
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::products_repository::ProductsRepository;
 use crate::models::dto::product_dto::{CreateProductDto, ListProductsParams, UpdateProductDto};
@@ -13,8 +10,7 @@ pub struct ProductsService {
 }
 
 impl ProductsService {
-    pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let products_repository = ProductsRepository::new(pool.clone());
+    pub fn new(products_repository: ProductsRepository) -> Self {
         Self {
             products_repository,
         }

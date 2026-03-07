@@ -1,6 +1,3 @@
-use deadpool_diesel::{Manager, Pool};
-use diesel::PgConnection;
-
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::suppliers_repository::SuppliersRepository;
 use crate::models::dto::supplier_dto::{CreateSupplierDto, ListSuppliersParams, UpdateSupplierDto};
@@ -13,8 +10,7 @@ pub struct SuppliersService {
 }
 
 impl SuppliersService {
-    pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let suppliers_repository = SuppliersRepository::new(pool.clone());
+    pub fn new(suppliers_repository: SuppliersRepository) -> Self {
         Self {
             suppliers_repository,
         }

@@ -2,8 +2,6 @@ use argon2::{
     Argon2, PasswordVerifier,
     password_hash::{Error, PasswordHash, PasswordHasher, SaltString},
 };
-use deadpool_diesel::{Manager, Pool};
-use diesel::PgConnection;
 use rand::rngs::OsRng;
 use std::env;
 
@@ -26,9 +24,7 @@ pub struct AuthService {
 }
 
 impl AuthService {
-    pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let user_repository = UserRepository::new(pool.clone());
-        let transaction_runner = TransactionRunner::new(pool.clone());
+    pub fn new(user_repository: UserRepository, transaction_runner: TransactionRunner) -> Self {
         Self {
             user_repository,
             transaction_runner,

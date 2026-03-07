@@ -1,6 +1,3 @@
-use deadpool_diesel::{Manager, Pool};
-use diesel::PgConnection;
-
 use crate::{
     errors::ApplicationError,
     infrastructure::db::stock_repository::ProductStockRepository,
@@ -16,8 +13,7 @@ pub struct StockService {
 }
 
 impl StockService {
-    pub fn new(pool: Pool<Manager<PgConnection>>) -> Self {
-        let stock_repository = ProductStockRepository::new(pool.clone());
+    pub fn new(stock_repository: ProductStockRepository) -> Self {
         Self { stock_repository }
     }
 
