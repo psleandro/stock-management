@@ -1,17 +1,7 @@
 use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
+use talk_to_me_api::{build_app, db};
 use tokio::net::TcpListener;
-
-use crate::{app::build_app, infrastructure::db};
-
-pub mod app;
-pub mod errors;
-pub mod extractors;
-pub mod handlers;
-pub mod infrastructure;
-pub mod models;
-pub mod routes;
-pub mod services;
 
 #[tokio::main]
 async fn main() {
