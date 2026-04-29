@@ -1,4 +1,20 @@
 services:
+  api:
+    container_name: ttm-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - PASSWORD_PEPPER=${PASSWORD_PEPPER}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - .:/usr/src/myapp
   db:
     container_name: ttm-db
     image: postgres

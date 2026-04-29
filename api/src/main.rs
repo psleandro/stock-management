@@ -16,7 +16,7 @@ async fn main() {
         .parse()
         .expect("Failed to parse PORT!");
 
-    let socket_addr = SocketAddr::from(([127, 0, 0, 1], port));
+    let socket_addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("App listening on {}", socket_addr);
 
     let listener = TcpListener::bind(socket_addr).await.unwrap();
