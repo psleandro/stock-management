@@ -207,4 +207,201 @@ mod tests {
             ),
         }
     }
+
+    #[tokio::test]
+    async fn should_not_allow_stock_entry_with_deleted_product() {
+        let _lock = lock_test_db().await;
+        let pool = create_test_pool().await;
+        clean_db(&pool).await;
+
+        let user = create_user(&pool, None).await;
+        let ws = create_workspace(&pool, user.id, None).await;
+        let product = create_product(&pool, ws.id, "Keyboard").await;
+        let supplier = create_supplier(&pool, ws.id, "Supplier").await;
+
+        let products_repo = ProductsRepository::new(pool.clone());
+        products_repo
+            .delete_product(ws.id, product.id)
+            .await
+            .unwrap();
+
+        let service = setup_service(pool.clone());
+
+        let result = service
+            .create_stock_entry(
+                ws.id,
+                StockMovementEntryDto {
+                    movement_date: Utc::now().naive_utc(),
+                    product_id: product.id,
+                    supplier_id: supplier.id,
+                    quantity: 10,
+                    unit_cost_in_cents: 5000,
+                    invoice_number: "INV-001".to_string(),
+                    notes: None,
+                },
+            )
+            .await;
+
+        match result {
+            Err(ApplicationError::DomainError(DomainError::ProductNotFound)) => {}
+            _ => panic!(
+                "Service should not allow using a deleted product; expected DomainError::ProductNotFound"
+            ),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_not_allow_stock_entry_with_deleted_supplier() {
+        let _lock = lock_test_db().await;
+        let pool = create_test_pool().await;
+        clean_db(&pool).await;
+
+        let user = create_user(&pool, None).await;
+        let ws = create_workspace(&pool, user.id, None).await;
+        let product = create_product(&pool, ws.id, "Keyboard").await;
+        let supplier = create_supplier(&pool, ws.id, "Supplier").await;
+
+        let suppliers_repo = SuppliersRepository::new(pool.clone());
+        suppliers_repo
+            .delete_supplier(ws.id, supplier.id)
+            .await
+            .unwrap();
+
+        let service = setup_service(pool.clone());
+
+        let result = service
+            .create_stock_entry(
+                ws.id,
+                StockMovementEntryDto {
+                    movement_date: Utc::now().naive_utc(),
+                    product_id: product.id,
+                    supplier_id: supplier.id,
+                    quantity: 10,
+                    unit_cost_in_cents: 5000,
+                    invoice_number: "INV-001".to_string(),
+                    notes: None,
+                },
+            )
+            .await;
+
+        match result {
+            Err(ApplicationError::DomainError(DomainError::SupplierNotFound)) => {}
+            _ => panic!(
+                "Service should not allow using a deleted supplier; expected DomainError::SupplierNotFound"
+            ),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_not_allow_stock_exit_with_deleted_product() {
+        let _lock = lock_test_db().await;
+        let pool = create_test_pool().await;
+        clean_db(&pool).await;
+
+        let user = create_user(&pool, None).await;
+        let ws = create_workspace(&pool, user.id, None).await;
+        let product = create_product(&pool, ws.id, "Keyboard").await;
+        let place = create_place(&pool, ws.id, "Main Office").await;
+        let supplier = create_supplier(&pool, ws.id, "Supplier").await;
+
+        let service = setup_service(pool.clone());
+
+        // Add some stock first
+        service
+            .create_stock_entry(
+                ws.id,
+                StockMovementEntryDto {
+                    movement_date: Utc::now().naive_utc(),
+                    product_id: product.id,
+                    supplier_id: supplier.id,
+                    quantity: 10,
+                    unit_cost_in_cents: 5000,
+                    invoice_number: "INV-001".to_string(),
+                    notes: None,
+                },
+            )
+            .await
+            .unwrap();
+
+        let products_repo = ProductsRepository::new(pool.clone());
+        products_repo
+            .delete_product(ws.id, product.id)
+            .await
+            .unwrap();
+
+        let result = service
+            .create_stock_exit(
+                ws.id,
+                StockMovementExitDto {
+                    movement_date: Utc::now().naive_utc(),
+                    product_id: product.id,
+                    place_id: place.id,
+                    quantity: 5,
+                    notes: None,
+                },
+            )
+            .await;
+
+        match result {
+            Err(ApplicationError::DomainError(DomainError::ProductNotFound)) => {}
+            _ => panic!(
+                "Service should not allow using a deleted product in stock exit; expected DomainError::ProductNotFound"
+            ),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_not_allow_stock_exit_with_deleted_place() {
+        let _lock = lock_test_db().await;
+        let pool = create_test_pool().await;
+        clean_db(&pool).await;
+
+        let user = create_user(&pool, None).await;
+        let ws = create_workspace(&pool, user.id, None).await;
+        let product = create_product(&pool, ws.id, "Keyboard").await;
+        let place = create_place(&pool, ws.id, "Main Office").await;
+        let supplier = create_supplier(&pool, ws.id, "Supplier").await;
+
+        let service = setup_service(pool.clone());
+
+        // Add some stock first
+        service
+            .create_stock_entry(
+                ws.id,
+                StockMovementEntryDto {
+                    movement_date: Utc::now().naive_utc(),
+                    product_id: product.id,
+                    supplier_id: supplier.id,
+                    quantity: 10,
+                    unit_cost_in_cents: 5000,
+                    invoice_number: "INV-001".to_string(),
+                    notes: None,
+                },
+            )
+            .await
+            .unwrap();
+
+        let places_repo = PlacesRepository::new(pool.clone());
+        places_repo.delete_place(ws.id, place.id).await.unwrap();
+
+        let result = service
+            .create_stock_exit(
+                ws.id,
+                StockMovementExitDto {
+                    movement_date: Utc::now().naive_utc(),
+                    product_id: product.id,
+                    place_id: place.id,
+                    quantity: 5,
+                    notes: None,
+                },
+            )
+            .await;
+
+        match result {
+            Err(ApplicationError::DomainError(DomainError::PlaceNotFound)) => {}
+            _ => panic!(
+                "Service should not allow using a deleted place; expected DomainError::PlaceNotFound"
+            ),
+        }
+    }
 }
