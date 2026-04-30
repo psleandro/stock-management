@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use chrono::Utc;
-    use talk_to_me_api::{
+    use stock_management_api::{
         db::places_repository::PlacesRepository,
         db::products_repository::ProductsRepository,
         db::stock_movements_repository::StockMovementsRepository,
@@ -202,7 +202,9 @@ mod tests {
 
         match result {
             Err(ApplicationError::DomainError(DomainError::NotEnoughStock)) => {}
-            _ => panic!("Service should not allow removing more items than available in stock; expected DomainError::NotEnoughStock"),
+            _ => panic!(
+                "Service should not allow removing more items than available in stock; expected DomainError::NotEnoughStock"
+            ),
         }
     }
 }

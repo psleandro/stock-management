@@ -21,6 +21,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/talk-to-me-api /usr/local/bin/talk-to-me-api
+COPY --from=builder /app/target/release/stock-management-api /usr/local/bin/stock-management-api
 
-CMD ["talk-to-me-api"]
+CMD ["stock-management-api"]

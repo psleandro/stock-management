@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use talk_to_me_api::{db::places_repository::PlacesRepository, models::place::UpdatePlace};
+    use stock_management_api::{
+        db::places_repository::PlacesRepository, models::place::UpdatePlace,
+    };
 
     use crate::common::{
         db::{clean_db, create_test_pool, lock_test_db},
@@ -126,10 +128,7 @@ mod tests {
 
         let repo = PlacesRepository::new(pool.clone());
 
-        let deleted_wrong_ws = repo
-            .delete_place(ws_b.id, created.id)
-            .await
-            .unwrap();
+        let deleted_wrong_ws = repo.delete_place(ws_b.id, created.id).await.unwrap();
         assert!(deleted_wrong_ws.is_none());
 
         let deleted = repo
@@ -172,4 +171,3 @@ mod tests {
         assert_eq!(result[0].workspace_id.value(), ws_a.id.value());
     }
 }
-

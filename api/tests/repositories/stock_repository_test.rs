@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use chrono::Utc;
-    use talk_to_me_api::{
+    use stock_management_api::{
         db::stock_movements_repository::StockMovementsRepository,
         db::stock_repository::ProductStockRepository,
         models::{

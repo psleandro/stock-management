@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use talk_to_me_api::{
+    use stock_management_api::{
         db::suppliers_repository::SuppliersRepository, models::supplier::UpdateSupplier,
     };
 

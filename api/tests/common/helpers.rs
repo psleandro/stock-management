@@ -3,7 +3,7 @@ use diesel::PgConnection;
 use fake::faker::name::raw::*;
 use fake::locales::*;
 use fake::{Fake, Faker};
-use talk_to_me_api::models::{
+use stock_management_api::models::{
     ids::WorkspaceId,
     place::{CreatePlace, Place},
     product::{BaseUnit, CreateProduct, Product},
@@ -14,7 +14,7 @@ use talk_to_me_api::models::{
 
 #[cfg(test)]
 pub async fn create_user(pool: &Pool<Manager<PgConnection>>, payload: Option<CreateUser>) -> User {
-    use talk_to_me_api::db::user_repository::UserRepository;
+    use stock_management_api::db::user_repository::UserRepository;
 
     use crate::common::helpers::random_user_payload;
 
@@ -30,10 +30,10 @@ pub async fn create_user(pool: &Pool<Manager<PgConnection>>, payload: Option<Cre
 #[cfg(test)]
 pub async fn create_workspace(
     pool: &Pool<Manager<PgConnection>>,
-    owner_id: talk_to_me_api::models::ids::UserId,
+    owner_id: stock_management_api::models::ids::UserId,
     name: Option<String>,
 ) -> Workspace {
-    use talk_to_me_api::db::workspace_repository::WorkspaceRepository;
+    use stock_management_api::db::workspace_repository::WorkspaceRepository;
 
     let ws_repository = WorkspaceRepository::new(pool.clone());
 
@@ -49,7 +49,7 @@ pub async fn create_product(
     workspace_id: WorkspaceId,
     name: &str,
 ) -> Product {
-    use talk_to_me_api::db::products_repository::ProductsRepository;
+    use stock_management_api::db::products_repository::ProductsRepository;
 
     let repo = ProductsRepository::new(pool.clone());
 
@@ -71,7 +71,7 @@ pub async fn create_supplier(
     workspace_id: WorkspaceId,
     name: &str,
 ) -> Supplier {
-    use talk_to_me_api::db::suppliers_repository::SuppliersRepository;
+    use stock_management_api::db::suppliers_repository::SuppliersRepository;
 
     let repo = SuppliersRepository::new(pool.clone());
 
@@ -89,7 +89,7 @@ pub async fn create_place(
     workspace_id: WorkspaceId,
     name: &str,
 ) -> Place {
-    use talk_to_me_api::db::places_repository::PlacesRepository;
+    use stock_management_api::db::places_repository::PlacesRepository;
 
     let repo = PlacesRepository::new(pool.clone());
 

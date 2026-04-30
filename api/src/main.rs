@@ -1,6 +1,6 @@
 use dotenvy::dotenv;
 use std::{env, net::SocketAddr};
-use talk_to_me_api::{build_app, db};
+use stock_management_api::{build_app, db};
 use tokio::net::TcpListener;
 
 #[tokio::main]

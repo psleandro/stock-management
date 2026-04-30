@@ -1,4 +1,4 @@
-use talk_to_me_api::{
+use stock_management_api::{
     db::workspace_repository::WorkspaceRepository, models::workspace::CreateWorkspace,
 };
 

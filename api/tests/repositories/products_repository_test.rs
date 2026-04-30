@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use talk_to_me_api::{
+    use stock_management_api::{
         db::products_repository::ProductsRepository,
-        models::{
-            product::{BaseUnit, CreateProduct, UpdateProduct},
-        },
+        models::product::{BaseUnit, CreateProduct, UpdateProduct},
     };
 
     use crate::common::{
@@ -19,8 +17,7 @@ mod tests {
         clean_db(pool).await;
 
         let user = create_user(pool, None).await;
-        let workspace =
-            create_workspace(pool, user.id, Some("Test workspace".to_string())).await;
+        let workspace = create_workspace(pool, user.id, Some("Test workspace".to_string())).await;
         let repo = ProductsRepository::new(pool.clone());
 
         let result = repo

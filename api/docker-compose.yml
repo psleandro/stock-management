@@ -1,6 +1,6 @@
 services:
   api:
-    container_name: ttm-api
+    container_name: stock-management-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,7 +16,7 @@ services:
     volumes:
       - .:/usr/src/myapp
   db:
-    container_name: ttm-db
+    container_name: stock-management-db
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
