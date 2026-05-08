@@ -6,11 +6,14 @@ use axum::Router;
 pub use state::AppState;
 
 use crate::{
-    infrastructure::db::{
-        places_repository::PlacesRepository, products_repository::ProductsRepository,
-        stock_movements_repository::StockMovementsRepository,
-        stock_repository::ProductStockRepository, suppliers_repository::SuppliersRepository,
-        transaction::TransactionRunner, user_repository::UserRepository,
+    infrastructure::{
+        db::{
+            places_repository::PlacesRepository, products_repository::ProductsRepository,
+            stock_movements_repository::StockMovementsRepository,
+            stock_repository::ProductStockRepository, suppliers_repository::SuppliersRepository,
+            transaction::TransactionRunner, user_repository::UserRepository,
+        },
+        messaging::kafka::{KafkaEventBus, create_producer, start_kafka_poller},
     },
     routes::app_routes,
     services::{
@@ -24,6 +27,10 @@ pub fn build_app(
     pool: deadpool_diesel::Pool<deadpool_diesel::Manager<diesel::PgConnection>>,
 ) -> Router {
     let transaction_runner = TransactionRunner::new(pool.clone());
+
+    let producer = Arc::new(create_producer());
+
+    let event_bus = Arc::new(KafkaEventBus::new(producer.clone()));
 
     let places_repository = PlacesRepository::new(pool.clone());
     let products_repository = ProductsRepository::new(pool.clone());
@@ -47,6 +54,8 @@ pub fn build_app(
         suppliers_repository,
         places_repository,
     );
+
+    start_kafka_poller(producer);
 
     let app_state = Arc::new(AppState::new(
         auth_service,

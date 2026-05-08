@@ -1,4 +1,5 @@
 pub mod app;
+pub mod contracts;
 pub mod errors;
 pub mod extractors;
 pub mod handlers;
