@@ -11,9 +11,9 @@ diesel::table! {
         id -> Int4,
         workspace_id -> Int4,
         name -> Text,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -29,16 +29,16 @@ diesel::table! {
         brand -> Nullable<Text>,
         min_stock -> Int8,
         observation -> Nullable<Text>,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
 diesel::table! {
     stock_movements (id) {
         id -> Int4,
-        movement_date -> Timestamp,
+        movement_date -> Timestamptz,
         product_id -> Uuid,
         supplier_id -> Nullable<Int4>,
         place_id -> Nullable<Int4>,
@@ -46,8 +46,8 @@ diesel::table! {
         unit_cost_in_cents -> Nullable<Int4>,
         invoice_number -> Nullable<Text>,
         notes -> Nullable<Text>,
-        created_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -56,9 +56,9 @@ diesel::table! {
         id -> Int4,
         workspace_id -> Int4,
         name -> Text,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -68,9 +68,9 @@ diesel::table! {
         name -> Nullable<Text>,
         email -> Text,
         password -> Text,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -79,9 +79,9 @@ diesel::table! {
         id -> Int4,
         name -> Nullable<Text>,
         owner_id -> Int4,
-        created_at -> Timestamp,
-        updated_at -> Timestamp,
-        deleted_at -> Nullable<Timestamp>,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 
