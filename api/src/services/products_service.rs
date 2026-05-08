@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use uuid::Uuid;
+
 use crate::contracts::event_bus::{Event, EventBus};
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::products_repository::ProductsRepository;
@@ -39,7 +41,7 @@ impl ProductsService {
     pub async fn get_product(
         &self,
         workspace_id: WorkspaceId,
-        product_id: i32,
+        product_id: Uuid,
     ) -> Result<Product, ApplicationError> {
         let product = self
             .products_repository
@@ -80,7 +82,7 @@ impl ProductsService {
     pub async fn update_product(
         &self,
         workspace_id: WorkspaceId,
-        product_id: i32,
+        product_id: Uuid,
         payload: UpdateProductDto,
     ) -> Result<Product, ApplicationError> {
         let update_product_data = UpdateProduct {
@@ -107,7 +109,7 @@ impl ProductsService {
     pub async fn delete_product(
         &self,
         workspace_id: WorkspaceId,
-        product_id: i32,
+        product_id: Uuid,
     ) -> Result<(), ApplicationError> {
         let deleted_product = self
             .products_repository

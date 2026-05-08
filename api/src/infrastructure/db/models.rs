@@ -3,6 +3,7 @@ use diesel::deserialize::FromSqlRow;
 use diesel::expression::AsExpression;
 use diesel::pg::Pg;
 use diesel::prelude::*;
+use uuid::Uuid;
 
 use crate::infrastructure::db::schema::sql_types::BaseUnit as SqlBaseUnit;
 use crate::infrastructure::db::schema::{
@@ -90,7 +91,7 @@ impl diesel::deserialize::FromSql<SqlBaseUnit, Pg> for BaseUnitModel {
 #[diesel(belongs_to(WorkspaceRow, foreign_key = workspace_id))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ProductRow {
-    pub id: i32,
+    pub id: Uuid,
     pub workspace_id: i32,
     pub name: String,
     pub base_unit: BaseUnitModel,
@@ -182,7 +183,7 @@ pub struct UpdateSupplierRow {
 pub struct StockMovementRow {
     pub id: i32,
     pub movement_date: NaiveDateTime,
-    pub product_id: i32,
+    pub product_id: Uuid,
     pub supplier_id: Option<i32>,
     pub place_id: Option<i32>,
     pub quantity: i32,
@@ -197,7 +198,7 @@ pub struct StockMovementRow {
 #[diesel(table_name=stock_movements)]
 pub struct StockMovementEntryRow {
     pub movement_date: NaiveDateTime,
-    pub product_id: i32,
+    pub product_id: Uuid,
     pub supplier_id: Option<i32>,
     pub quantity: i32,
     pub unit_cost_in_cents: Option<i32>,
@@ -209,7 +210,7 @@ pub struct StockMovementEntryRow {
 #[diesel(table_name=stock_movements)]
 pub struct StockMovementExitRow {
     pub movement_date: NaiveDateTime,
-    pub product_id: i32,
+    pub product_id: Uuid,
     pub place_id: Option<i32>,
     pub quantity: i32,
     pub notes: Option<String>,

@@ -2,6 +2,7 @@ use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 use diesel::dsl::sum;
 use diesel::prelude::*;
+use uuid::Uuid;
 
 use crate::errors::InfrastructureError;
 use crate::infrastructure::db::models::ProductRow;
@@ -46,7 +47,7 @@ impl ProductStockRepository {
                     .or(products::brand.ilike(&search_like))
                     .or(products::observation.ilike(&search_like));
 
-                if let Ok(search_number) = search.parse::<i32>() {
+                if let Ok(search_number) = search.parse::<Uuid>() {
                     products_query =
                         products_query.filter(filter_expression.or(products::id.eq(search_number)));
                 } else {
@@ -90,7 +91,7 @@ impl ProductStockRepository {
 
     pub async fn get_stock_by_product_id(
         &self,
-        product_id: i32,
+        product_id: Uuid,
     ) -> Result<i64, InfrastructureError> {
         let connection = self
             .pool

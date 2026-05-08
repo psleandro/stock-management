@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
     infrastructure::db::models::{BaseUnitModel, ProductRow},
@@ -36,7 +37,7 @@ impl From<BaseUnit> for BaseUnitModel {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Product {
-    pub id: i32,
+    pub id: Uuid,
 
     #[serde(skip_serializing)]
     pub workspace_id: WorkspaceId,

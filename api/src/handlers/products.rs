@@ -6,6 +6,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use uuid::Uuid;
 
 use crate::{
     app::AppState,
@@ -31,7 +32,7 @@ pub async fn list_products(
 
 pub async fn get_product(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<i32>,
+    Path(id): Path<Uuid>,
     user: AuthenticatedUser,
 ) -> Response {
     let response = state
@@ -63,7 +64,7 @@ pub async fn create_product(
 
 pub async fn update_product(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<i32>,
+    Path(id): Path<Uuid>,
     user: AuthenticatedUser,
     ValidatedJson(payload): ValidatedJson<UpdateProductDto>,
 ) -> Response {
@@ -80,12 +81,12 @@ pub async fn update_product(
 
 pub async fn delete_product(
     State(state): State<Arc<AppState>>,
-    Path(id): Path<u64>,
+    Path(id): Path<Uuid>,
     user: AuthenticatedUser,
 ) -> Response {
     let response = state
         .products_service
-        .delete_product(user.workspace_id, id as i32)
+        .delete_product(user.workspace_id, id)
         .await;
 
     match response {

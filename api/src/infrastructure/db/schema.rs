@@ -22,7 +22,7 @@ diesel::table! {
     use super::sql_types::BaseUnit;
 
     products (id) {
-        id -> Int4,
+        id -> Uuid,
         workspace_id -> Int4,
         name -> Text,
         base_unit -> BaseUnit,
@@ -39,7 +39,7 @@ diesel::table! {
     stock_movements (id) {
         id -> Int4,
         movement_date -> Timestamp,
-        product_id -> Int4,
+        product_id -> Uuid,
         supplier_id -> Nullable<Int4>,
         place_id -> Nullable<Int4>,
         quantity -> Int4,

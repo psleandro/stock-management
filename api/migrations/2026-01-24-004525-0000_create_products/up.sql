@@ -6,7 +6,7 @@ create type base_unit as ENUM (
 );
 
 create table IF not exists products (
-    id SERIAL PRIMARY KEY,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
     workspace_id INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     base_unit base_unit NOT NULL,

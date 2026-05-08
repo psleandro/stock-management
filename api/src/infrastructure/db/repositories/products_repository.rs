@@ -2,6 +2,7 @@ use chrono::Utc;
 use deadpool_diesel::{Manager, Pool};
 use diesel::PgConnection;
 use diesel::prelude::*;
+use uuid::Uuid;
 
 use crate::errors::InfrastructureError;
 use crate::infrastructure::db::models::{CreateProductRow, ProductRow, UpdateProductRow};
@@ -47,7 +48,7 @@ impl ProductsRepository {
                     .or(products::brand.ilike(&search_like))
                     .or(products::observation.ilike(&search_like));
 
-                if let Ok(search_number) = search.parse::<i32>() {
+                if let Ok(search_number) = search.parse::<Uuid>() {
                     products_query =
                         products_query.filter(filter_expression.or(products::id.eq(search_number)));
                 } else {
@@ -71,7 +72,7 @@ impl ProductsRepository {
     pub async fn get_product_by_id(
         &self,
         workspace_id: WorkspaceId,
-        product_id: i32,
+        product_id: Uuid,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
             .pool
@@ -131,7 +132,7 @@ impl ProductsRepository {
     pub async fn update_product(
         &self,
         workspace_id: WorkspaceId,
-        product_id: i32,
+        product_id: Uuid,
         product: UpdateProduct,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
@@ -173,7 +174,7 @@ impl ProductsRepository {
     pub async fn delete_product(
         &self,
         workspace_id: WorkspaceId,
-        product_id: i32,
+        product_id: Uuid,
     ) -> Result<Option<Product>, InfrastructureError> {
         let connection = self
             .pool

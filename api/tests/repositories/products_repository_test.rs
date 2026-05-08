@@ -32,7 +32,7 @@ mod tests {
             .await
             .unwrap();
 
-        assert!(result.id > 0);
+        assert_eq!(result.id.get_version_num(), 7);
         assert_eq!(result.workspace_id.value(), workspace.id.value());
         assert_eq!(result.name, "Keyboard");
         assert_eq!(result.base_unit, BaseUnit::Unit);

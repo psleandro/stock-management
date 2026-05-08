@@ -1,11 +1,12 @@
 use chrono::NaiveDateTime;
 use serde::Serialize;
+use uuid::Uuid;
 
 #[derive(Serialize)]
 pub struct StockMovement {
     pub id: i32,
     pub movement_date: NaiveDateTime,
-    pub product_id: i32,
+    pub product_id: Uuid,
     pub supplier_id: Option<i32>,
     pub place_id: Option<i32>,
     pub quantity: i32,
@@ -20,7 +21,7 @@ pub struct StockMovement {
 
 pub struct StockMovementEntry {
     pub movement_date: NaiveDateTime,
-    pub product_id: i32,
+    pub product_id: Uuid,
     pub supplier_id: i32,
     pub quantity: i32,
     pub unit_cost_in_cents: i32,
@@ -30,7 +31,7 @@ pub struct StockMovementEntry {
 
 pub struct StockMovementExit {
     pub movement_date: NaiveDateTime,
-    pub product_id: i32,
+    pub product_id: Uuid,
     pub place_id: i32,
     pub quantity: i32,
     pub notes: Option<String>,

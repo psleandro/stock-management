@@ -1,12 +1,13 @@
 use chrono::NaiveDateTime;
 use serde::Deserialize;
+use uuid::Uuid;
 use validator::Validate;
 
 #[derive(Deserialize, Validate)]
 pub struct StockMovementEntryDto {
     pub movement_date: NaiveDateTime,
 
-    pub product_id: i32,
+    pub product_id: Uuid,
 
     pub supplier_id: i32,
 
@@ -25,7 +26,7 @@ pub struct StockMovementEntryDto {
 pub struct StockMovementExitDto {
     pub movement_date: NaiveDateTime,
 
-    pub product_id: i32,
+    pub product_id: Uuid,
 
     pub place_id: i32,
 
