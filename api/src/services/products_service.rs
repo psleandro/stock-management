@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use crate::contracts::event_bus::{Event, EventBus};
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::products_repository::ProductsRepository;
 use crate::models::dto::product_dto::{CreateProductDto, ListProductsParams, UpdateProductDto};
@@ -7,12 +10,14 @@ use crate::models::product::{CreateProduct, Product, UpdateProduct};
 #[derive(Clone)]
 pub struct ProductsService {
     pub products_repository: ProductsRepository,
+    pub event_bus: Arc<dyn EventBus>,
 }
 
 impl ProductsService {
-    pub fn new(products_repository: ProductsRepository) -> Self {
+    pub fn new(products_repository: ProductsRepository, event_bus: Arc<dyn EventBus>) -> Self {
         Self {
             products_repository,
+            event_bus,
         }
     }
 
@@ -66,6 +71,9 @@ impl ProductsService {
             .create_product(create_product_data)
             .await?;
 
+        self.event_bus
+            .publish(Event::ProductCreated(created_product.clone()));
+
         Ok(created_product)
     }
 
@@ -88,10 +96,12 @@ impl ProductsService {
             .update_product(workspace_id, product_id, update_product_data)
             .await?;
 
-        match updated_product {
-            Some(p) => Ok(p),
-            None => Err(ApplicationError::NotFound),
-        }
+        let updated_product = updated_product.ok_or(ApplicationError::NotFound)?;
+
+        self.event_bus
+            .publish(Event::ProductUpdated(updated_product.clone()));
+
+        Ok(updated_product)
     }
 
     pub async fn delete_product(
@@ -104,9 +114,11 @@ impl ProductsService {
             .delete_product(workspace_id, product_id)
             .await?;
 
-        match deleted_product {
-            Some(_) => Ok(()),
-            None => Err(ApplicationError::NotFound),
-        }
+        let deleted_product = deleted_product.ok_or(ApplicationError::NotFound)?;
+
+        self.event_bus
+            .publish(Event::ProductDeleted(deleted_product.clone()));
+
+        Ok(())
     }
 }
