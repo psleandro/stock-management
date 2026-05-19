@@ -3,6 +3,8 @@ package usecases
 import (
 	"orders-api/internal/models"
 	"orders-api/internal/repositories"
+
+	"github.com/google/uuid"
 )
 
 type OrderUsecase struct {
@@ -25,7 +27,7 @@ func (u OrderUsecase) List() ([]models.Order, error) {
 	return orders, nil
 }
 
-func (u OrderUsecase) GetByID(orderID string) (*models.Order, error) {
+func (u OrderUsecase) GetByID(orderID uuid.UUID) (*models.Order, error) {
 	order, err := u.repo.GetByID(orderID)
 
 	if err != nil {

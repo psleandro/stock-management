@@ -8,7 +8,12 @@ import (
 )
 
 type Config struct {
-	ApiPort string
+	ApiPort      string
+	PostgresHost string
+	PostgresPort string
+	PostgresUser string
+	PostgresPass string
+	PostgresDB   string
 }
 
 func Load() *Config {
@@ -19,7 +24,12 @@ func Load() *Config {
 	}
 
 	return &Config{
-		ApiPort: getEnv("PORT", "8080"),
+		ApiPort:      getEnv("PORT", "8080"),
+		PostgresHost: getEnv("POSTGRES_HOST", "localhost"),
+		PostgresPort: getEnv("POSTGRES_PORT", "5432"),
+		PostgresUser: getEnv("POSTGRES_USER", "myuser"),
+		PostgresPass: getEnv("POSTGRES_PASSWORD", "secretpassword"),
+		PostgresDB:   getEnv("POSTGRES_DB", "orders"),
 	}
 }
 

@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"orders-api/internal/models"
+
+	"github.com/google/uuid"
 )
 
 func (h Handlers) registerOrderEndpoints() {
@@ -27,7 +29,16 @@ func (h Handlers) getAllOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handlers) getOrderByID(w http.ResponseWriter, r *http.Request) {
-	orderID := r.PathValue("orderID")
+	orderIDStr := r.PathValue("orderID")
+
+	orderID, err := uuid.Parse((orderIDStr))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.ErrorResponse{Reason: err.Error()})
+		return
+	}
+
 	order, err := h.orderUsecase.GetByID(orderID)
 
 	if err != nil {
