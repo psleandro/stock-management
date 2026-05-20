@@ -26,7 +26,7 @@ func main() {
 		log.Fatalf("Failed to connect to postgres: %v", err)
 	}
 
-	if err := db.AutoMigrate(&models.Order{}, &models.OrderItem{}); err != nil {
+	if err := db.AutoMigrate(&models.Product{}, &models.Order{}, &models.OrderItem{}); err != nil {
 		log.Fatalf("Failed to migrate: %v", err)
 	}
 
