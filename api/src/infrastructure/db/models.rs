@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use diesel::deserialize::FromSqlRow;
 use diesel::expression::AsExpression;
 use diesel::pg::Pg;
@@ -18,9 +18,9 @@ pub struct UserRow {
     pub name: Option<String>,
     pub email: String,
     pub password: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
@@ -39,9 +39,9 @@ pub struct WorkspaceRow {
     pub id: i32,
     pub name: Option<String>,
     pub owner_id: i32,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
@@ -98,9 +98,9 @@ pub struct ProductRow {
     pub brand: Option<String>,
     pub min_stock: i64,
     pub observation: Option<String>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
@@ -132,9 +132,9 @@ pub struct PlaceRow {
     pub id: i32,
     pub workspace_id: i32,
     pub name: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
@@ -158,9 +158,9 @@ pub struct SupplierRow {
     pub id: i32,
     pub workspace_id: i32,
     pub name: String,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
@@ -182,7 +182,7 @@ pub struct UpdateSupplierRow {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct StockMovementRow {
     pub id: i32,
-    pub movement_date: NaiveDateTime,
+    pub movement_date: DateTime<Utc>,
     pub product_id: Uuid,
     pub supplier_id: Option<i32>,
     pub place_id: Option<i32>,
@@ -190,14 +190,14 @@ pub struct StockMovementRow {
     pub unit_cost_in_cents: Option<i32>,
     pub invoice_number: Option<String>,
     pub notes: Option<String>,
-    pub created_at: NaiveDateTime,
-    pub deleted_at: Option<NaiveDateTime>,
+    pub created_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name=stock_movements)]
 pub struct StockMovementEntryRow {
-    pub movement_date: NaiveDateTime,
+    pub movement_date: DateTime<Utc>,
     pub product_id: Uuid,
     pub supplier_id: Option<i32>,
     pub quantity: i32,
@@ -209,7 +209,7 @@ pub struct StockMovementEntryRow {
 #[derive(Insertable)]
 #[diesel(table_name=stock_movements)]
 pub struct StockMovementExitRow {
-    pub movement_date: NaiveDateTime,
+    pub movement_date: DateTime<Utc>,
     pub product_id: Uuid,
     pub place_id: Option<i32>,
     pub quantity: i32,

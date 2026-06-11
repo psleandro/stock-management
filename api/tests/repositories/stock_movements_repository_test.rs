@@ -3,14 +3,12 @@ mod tests {
     use chrono::Utc;
     use stock_management_api::{
         db::stock_movements_repository::StockMovementsRepository,
-        models::{
-            stock_movement::{StockMovementEntry, StockMovementExit},
-        },
+        models::stock_movement::{StockMovementEntry, StockMovementExit},
     };
 
     use crate::common::{
         db::{clean_db, create_test_pool, lock_test_db},
-        helpers::{create_product, create_user, create_workspace, create_supplier, create_place},
+        helpers::{create_place, create_product, create_supplier, create_user, create_workspace},
     };
 
     #[tokio::test]
@@ -23,10 +21,10 @@ mod tests {
         let workspace = create_workspace(pool, user.id, Some("Test workspace".to_string())).await;
         let product = create_product(pool, workspace.id, "Keyboard").await;
         let supplier = create_supplier(pool, workspace.id, "Logitech").await;
-        
+
         let repo = StockMovementsRepository::new(pool.clone());
 
-        let movement_date = Utc::now().naive_utc();
+        let movement_date = Utc::now();
         let result = repo
             .create_stock_entry(StockMovementEntry {
                 movement_date,
@@ -60,10 +58,10 @@ mod tests {
         let workspace = create_workspace(pool, user.id, Some("Test workspace".to_string())).await;
         let product = create_product(pool, workspace.id, "Keyboard").await;
         let place = create_place(pool, workspace.id, "Main Office").await;
-        
+
         let repo = StockMovementsRepository::new(pool.clone());
 
-        let movement_date = Utc::now().naive_utc();
+        let movement_date = Utc::now();
         let result = repo
             .create_stock_exit(StockMovementExit {
                 movement_date,
@@ -106,31 +104,37 @@ mod tests {
         let repo = StockMovementsRepository::new(pool.clone());
 
         // Create entry for WS A
-        let entry_a = repo.create_stock_entry(StockMovementEntry {
-            movement_date: Utc::now().naive_utc(),
-            product_id: product_a.id,
-            supplier_id: supplier_a.id,
-            quantity: 5,
-            unit_cost_in_cents: 100,
-            invoice_number: "INV-A".to_string(),
-            notes: None,
-        }).await.unwrap();
+        let entry_a = repo
+            .create_stock_entry(StockMovementEntry {
+                movement_date: Utc::now(),
+                product_id: product_a.id,
+                supplier_id: supplier_a.id,
+                quantity: 5,
+                unit_cost_in_cents: 100,
+                invoice_number: "INV-A".to_string(),
+                notes: None,
+            })
+            .await
+            .unwrap();
 
         // Create entry for WS B
-        let entry_b = repo.create_stock_entry(StockMovementEntry {
-            movement_date: Utc::now().naive_utc(),
-            product_id: product_b.id,
-            supplier_id: supplier_b.id,
-            quantity: 10,
-            unit_cost_in_cents: 200,
-            invoice_number: "INV-B".to_string(),
-            notes: None,
-        }).await.unwrap();
+        let entry_b = repo
+            .create_stock_entry(StockMovementEntry {
+                movement_date: Utc::now(),
+                product_id: product_b.id,
+                supplier_id: supplier_b.id,
+                quantity: 10,
+                unit_cost_in_cents: 200,
+                invoice_number: "INV-B".to_string(),
+                notes: None,
+            })
+            .await
+            .unwrap();
 
         assert_ne!(entry_a.id, entry_b.id);
         assert_eq!(entry_a.product_id, product_a.id);
         assert_eq!(entry_b.product_id, product_b.id);
-        
+
         // Ensure they have different suppliers
         assert_eq!(entry_a.supplier_id, Some(supplier_a.id));
         assert_eq!(entry_b.supplier_id, Some(supplier_b.id));

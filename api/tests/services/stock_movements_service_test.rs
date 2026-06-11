@@ -51,7 +51,7 @@ mod tests {
             .create_stock_entry(
                 ws_a.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product_b.id,
                     supplier_id: supplier_b.id,
                     quantity: 10,
@@ -76,7 +76,7 @@ mod tests {
             .create_stock_entry(
                 ws_a.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product_a.id,
                     supplier_id: supplier_b.id,
                     quantity: 10,
@@ -117,7 +117,7 @@ mod tests {
             .create_stock_exit(
                 ws_a.id,
                 StockMovementExitDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product_b.id,
                     place_id: place_b.id,
                     quantity: 5,
@@ -140,7 +140,7 @@ mod tests {
             .create_stock_exit(
                 ws_a.id,
                 StockMovementExitDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product_a.id,
                     place_id: place_b.id,
                     quantity: 5,
@@ -175,7 +175,7 @@ mod tests {
             .create_stock_entry(
                 ws.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     supplier_id: supplier.id,
                     quantity: 10,
@@ -191,7 +191,7 @@ mod tests {
             .create_stock_exit(
                 ws.id,
                 StockMovementExitDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     place_id: place.id,
                     quantity: 15,
@@ -231,7 +231,7 @@ mod tests {
             .create_stock_entry(
                 ws.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     supplier_id: supplier.id,
                     quantity: 10,
@@ -273,7 +273,7 @@ mod tests {
             .create_stock_entry(
                 ws.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     supplier_id: supplier.id,
                     quantity: 10,
@@ -311,7 +311,7 @@ mod tests {
             .create_stock_entry(
                 ws.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     supplier_id: supplier.id,
                     quantity: 10,
@@ -333,7 +333,7 @@ mod tests {
             .create_stock_exit(
                 ws.id,
                 StockMovementExitDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     place_id: place.id,
                     quantity: 5,
@@ -369,7 +369,7 @@ mod tests {
             .create_stock_entry(
                 ws.id,
                 StockMovementEntryDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     supplier_id: supplier.id,
                     quantity: 10,
@@ -388,7 +388,7 @@ mod tests {
             .create_stock_exit(
                 ws.id,
                 StockMovementExitDto {
-                    movement_date: Utc::now().naive_utc(),
+                    movement_date: Utc::now(),
                     product_id: product.id,
                     place_id: place.id,
                     quantity: 5,

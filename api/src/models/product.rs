@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -47,11 +47,11 @@ pub struct Product {
     pub brand: Option<String>,
     pub min_stock: i64,
     pub observation: Option<String>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub deleted_at: Option<NaiveDateTime>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 impl From<ProductRow> for Product {

@@ -4,14 +4,12 @@ mod tests {
     use stock_management_api::{
         db::stock_movements_repository::StockMovementsRepository,
         db::stock_repository::ProductStockRepository,
-        models::{
-            stock_movement::{StockMovementEntry, StockMovementExit},
-        },
+        models::stock_movement::{StockMovementEntry, StockMovementExit},
     };
 
     use crate::common::{
         db::{clean_db, create_test_pool, lock_test_db},
-        helpers::{create_product, create_user, create_workspace, create_supplier, create_place},
+        helpers::{create_place, create_product, create_supplier, create_user, create_workspace},
     };
 
     #[tokio::test]
@@ -25,14 +23,14 @@ mod tests {
         let product = create_product(pool, workspace.id, "Keyboard").await;
         let supplier = create_supplier(pool, workspace.id, "Logitech").await;
         let place = create_place(pool, workspace.id, "Main Office").await;
-        
+
         let movements_repo = StockMovementsRepository::new(pool.clone());
         let stock_repo = ProductStockRepository::new(pool.clone());
 
         // Add 100 items
         movements_repo
             .create_stock_entry(StockMovementEntry {
-                movement_date: Utc::now().naive_utc(),
+                movement_date: Utc::now(),
                 product_id: product.id,
                 supplier_id: supplier.id,
                 quantity: 100,
@@ -46,7 +44,7 @@ mod tests {
         // Remove 20 items
         movements_repo
             .create_stock_exit(StockMovementExit {
-                movement_date: Utc::now().naive_utc(),
+                movement_date: Utc::now(),
                 product_id: product.id,
                 place_id: place.id,
                 quantity: -20,
@@ -56,7 +54,10 @@ mod tests {
             .unwrap();
 
         // List products and check stock
-        let result = stock_repo.list_products_with_stock(workspace.id, "").await.unwrap();
+        let result = stock_repo
+            .list_products_with_stock(workspace.id, "")
+            .await
+            .unwrap();
 
         assert_eq!(result.len(), 1);
         let (p, stock) = &result[0];
@@ -75,13 +76,13 @@ mod tests {
         let workspace = create_workspace(pool, user.id, Some("Test workspace".to_string())).await;
         let product = create_product(pool, workspace.id, "Keyboard").await;
         let supplier = create_supplier(pool, workspace.id, "Logitech").await;
-        
+
         let movements_repo = StockMovementsRepository::new(pool.clone());
         let stock_repo = ProductStockRepository::new(pool.clone());
 
         movements_repo
             .create_stock_entry(StockMovementEntry {
-                movement_date: Utc::now().naive_utc(),
+                movement_date: Utc::now(),
                 product_id: product.id,
                 supplier_id: supplier.id,
                 quantity: 50,
@@ -92,7 +93,10 @@ mod tests {
             .await
             .unwrap();
 
-        let stock = stock_repo.get_stock_by_product_id(product.id).await.unwrap();
+        let stock = stock_repo
+            .get_stock_by_product_id(product.id)
+            .await
+            .unwrap();
         assert_eq!(stock, 50);
     }
 
@@ -120,7 +124,7 @@ mod tests {
         // Add stock to A
         movements_repo
             .create_stock_entry(StockMovementEntry {
-                movement_date: Utc::now().naive_utc(),
+                movement_date: Utc::now(),
                 product_id: product_a.id,
                 supplier_id: supplier_a.id,
                 quantity: 10,
@@ -134,7 +138,7 @@ mod tests {
         // Add stock to B
         movements_repo
             .create_stock_entry(StockMovementEntry {
-                movement_date: Utc::now().naive_utc(),
+                movement_date: Utc::now(),
                 product_id: product_b.id,
                 supplier_id: supplier_b.id,
                 quantity: 20,
@@ -146,12 +150,18 @@ mod tests {
             .unwrap();
 
         // Check A
-        let result_a = stock_repo.list_products_with_stock(ws_a.id, "").await.unwrap();
+        let result_a = stock_repo
+            .list_products_with_stock(ws_a.id, "")
+            .await
+            .unwrap();
         assert_eq!(result_a.len(), 1);
         assert_eq!(result_a[0].1.current, 10);
 
         // Check B
-        let result_b = stock_repo.list_products_with_stock(ws_b.id, "").await.unwrap();
+        let result_b = stock_repo
+            .list_products_with_stock(ws_b.id, "")
+            .await
+            .unwrap();
         assert_eq!(result_b.len(), 1);
         assert_eq!(result_b[0].1.current, 20);
     }
