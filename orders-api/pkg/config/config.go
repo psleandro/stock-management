@@ -14,6 +14,7 @@ type Config struct {
 	PostgresUser string
 	PostgresPass string
 	PostgresDB   string
+	KafkaBrokers string
 }
 
 func Load() *Config {
@@ -30,6 +31,7 @@ func Load() *Config {
 		PostgresUser: getEnv("POSTGRES_USER", "myuser"),
 		PostgresPass: getEnv("POSTGRES_PASSWORD", "secretpassword"),
 		PostgresDB:   getEnv("POSTGRES_DB", "orders"),
+		KafkaBrokers: getEnv("KAFKA_BROKERS", "localhost:9092"),
 	}
 }
 

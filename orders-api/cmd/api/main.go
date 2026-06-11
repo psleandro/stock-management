@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"orders-api/internal/handlers"
+	"orders-api/internal/messaging"
 	"orders-api/internal/models"
 	pgRepo "orders-api/internal/repositories/postgres"
 	"orders-api/internal/usecases"
@@ -33,6 +34,16 @@ func main() {
 	orderRepository := pgRepo.NewOrderRepository(db)
 
 	orderUsecase := usecases.NewOrderUsecase(orderRepository)
+
+	productRepository := pgRepo.NewProductRepository(db)
+
+	productUsecase := usecases.NewProductUsecase(productRepository)
+
+	products_consumer := messaging.NewProductsConsumer([]string{cfg.KafkaBrokers}, productUsecase)
+
+	go products_consumer.InitializeConsume()
+
+	defer products_consumer.Close()
 
 	h := handlers.New(orderUsecase)
 
