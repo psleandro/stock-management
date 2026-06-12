@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-	"log/slog"
 	"net/http"
 	"orders-api/internal/usecases"
 )
@@ -17,13 +15,6 @@ func New(orderUsecase *usecases.OrderUsecase) *Handlers {
 	}
 }
 
-func (h Handlers) Listen(port int) error {
-	h.registerOrderEndpoints()
-
-	slog.Info("Listening on ", "port", port)
-
-	return http.ListenAndServe(
-		fmt.Sprintf(":%v", port),
-		nil,
-	)
+func (h Handlers) RegisterEndpoints(mux *http.ServeMux) {
+	h.registerOrderEndpoints(mux)
 }

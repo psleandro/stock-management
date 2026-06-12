@@ -9,10 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h Handlers) registerOrderEndpoints() {
-	http.HandleFunc("GET /orders", h.getAllOrders)
-	http.HandleFunc("GET /orders/{orderID}", h.getOrderByID)
-	http.HandleFunc("POST /orders", h.createOrder)
+func (h Handlers) registerOrderEndpoints(mux *http.ServeMux) {
+	mux.HandleFunc("GET /orders", h.getAllOrders)
+	mux.HandleFunc("GET /orders/{orderID}", h.getOrderByID)
+	mux.HandleFunc("POST /orders", h.createOrder)
 }
 
 func (h Handlers) getAllOrders(w http.ResponseWriter, r *http.Request) {

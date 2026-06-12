@@ -29,9 +29,9 @@ func NewProductsConsumer(brokers []string, productsUsecase *usecases.ProductUsec
 	}
 }
 
-func (c *ProductsConsumer) InitializeConsume() {
+func (c *ProductsConsumer) InitializeConsume(ctx context.Context) {
 	for {
-		message, err := c.reader.ReadMessage(context.Background())
+		message, err := c.reader.ReadMessage(ctx)
 
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
