@@ -1,12 +1,15 @@
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use chrono::Utc;
     use stock_management_api::{
-        db::places_repository::PlacesRepository,
-        db::products_repository::ProductsRepository,
-        db::stock_movements_repository::StockMovementsRepository,
-        db::stock_repository::ProductStockRepository,
-        db::suppliers_repository::SuppliersRepository,
+        contracts::event_bus::{Event, StockEventType},
+        db::{
+            places_repository::PlacesRepository, products_repository::ProductsRepository,
+            stock_movements_repository::StockMovementsRepository,
+            stock_repository::ProductStockRepository, suppliers_repository::SuppliersRepository,
+        },
         errors::{ApplicationError, DomainError},
         models::dto::stock_movement_dto::{StockMovementEntryDto, StockMovementExitDto},
         services::stock_movements_service::StockMovementsService,
@@ -15,6 +18,7 @@ mod tests {
     use crate::common::{
         db::{clean_db, create_test_pool, lock_test_db},
         helpers::{create_place, create_product, create_supplier, create_user, create_workspace},
+        messaging::MockEventBus,
     };
 
     fn setup_service(
@@ -26,6 +30,7 @@ mod tests {
             ProductStockRepository::new(pool.clone()),
             SuppliersRepository::new(pool.clone()),
             PlacesRepository::new(pool.clone()),
+            Arc::new(MockEventBus::new()),
         )
     }
 
@@ -402,6 +407,134 @@ mod tests {
             _ => panic!(
                 "Service should not allow using a deleted place; expected DomainError::PlaceNotFound"
             ),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_publish_stock_entry_event() {
+        let _lock = lock_test_db().await;
+        let pool = create_test_pool().await;
+        clean_db(&pool).await;
+
+        let user = create_user(&pool, None).await;
+        let ws = create_workspace(&pool, user.id, None).await;
+        let product = create_product(&pool, ws.id, "Keyboard").await;
+        let supplier = create_supplier(&pool, ws.id, "Supplier").await;
+
+        let event_bus = Arc::new(MockEventBus::new());
+
+        let service = StockMovementsService::new(
+            ProductsRepository::new(pool.clone()),
+            StockMovementsRepository::new(pool.clone()),
+            ProductStockRepository::new(pool.clone()),
+            SuppliersRepository::new(pool.clone()),
+            PlacesRepository::new(pool.clone()),
+            event_bus.clone(),
+        );
+
+        let result = service
+            .create_stock_entry(
+                ws.id,
+                StockMovementEntryDto {
+                    movement_date: Utc::now(),
+                    product_id: product.id,
+                    supplier_id: supplier.id,
+                    quantity: 10,
+                    unit_cost_in_cents: 5000,
+                    invoice_number: "INV-001".to_string(),
+                    notes: None,
+                },
+            )
+            .await
+            .unwrap();
+
+        let events = event_bus.published_events();
+
+        assert_eq!(events.len(), 1);
+
+        match &events[0] {
+            Event::StockChanged(evt) => match evt {
+                StockEventType::StockIn(exit_evt) => {
+                    assert_eq!(exit_evt.movement_id, result.id);
+                    assert_eq!(exit_evt.product_id, product.id);
+                    assert_eq!(exit_evt.quantity, 10);
+                }
+                _ => panic!("expected StockIn event"),
+            },
+
+            _ => panic!("expected StockChanged event"),
+        }
+    }
+
+    #[tokio::test]
+    async fn should_publish_stock_exit_event() {
+        let _lock = lock_test_db().await;
+        let pool = create_test_pool().await;
+        clean_db(&pool).await;
+
+        let user = create_user(&pool, None).await;
+        let ws = create_workspace(&pool, user.id, None).await;
+        let product = create_product(&pool, ws.id, "Keyboard").await;
+        let place = create_place(&pool, ws.id, "Main Office").await;
+        let supplier = create_supplier(&pool, ws.id, "Supplier").await;
+
+        let event_bus = Arc::new(MockEventBus::new());
+
+        let service = StockMovementsService::new(
+            ProductsRepository::new(pool.clone()),
+            StockMovementsRepository::new(pool.clone()),
+            ProductStockRepository::new(pool.clone()),
+            SuppliersRepository::new(pool.clone()),
+            PlacesRepository::new(pool.clone()),
+            event_bus.clone(),
+        );
+
+        // Add some stock first
+        service
+            .create_stock_entry(
+                ws.id,
+                StockMovementEntryDto {
+                    movement_date: Utc::now(),
+                    product_id: product.id,
+                    supplier_id: supplier.id,
+                    quantity: 10,
+                    unit_cost_in_cents: 5000,
+                    invoice_number: "INV-001".to_string(),
+                    notes: None,
+                },
+            )
+            .await
+            .unwrap();
+
+        let result = service
+            .create_stock_exit(
+                ws.id,
+                StockMovementExitDto {
+                    movement_date: Utc::now(),
+                    product_id: product.id,
+                    place_id: place.id,
+                    quantity: 5,
+                    notes: None,
+                },
+            )
+            .await
+            .unwrap();
+
+        let events = event_bus.published_events();
+
+        assert_eq!(events.len(), 2);
+
+        match &events[1] {
+            Event::StockChanged(evt) => match evt {
+                StockEventType::StockOut(exit_evt) => {
+                    assert_eq!(exit_evt.movement_id, result.id);
+                    assert_eq!(exit_evt.product_id, product.id);
+                    assert_eq!(exit_evt.quantity, 5);
+                }
+                _ => panic!("expected StockOut event"),
+            },
+
+            _ => panic!("expected StockChanged event"),
         }
     }
 }

@@ -43,7 +43,7 @@ pub fn build_app(
 
     let auth_service = AuthService::new(user_repository, transaction_runner);
     let places_service = PlacesService::new(places_repository.clone());
-    let products_service = ProductsService::new(products_repository.clone(), event_bus);
+    let products_service = ProductsService::new(products_repository.clone(), event_bus.clone());
     let suppliers_service = SuppliersService::new(suppliers_repository.clone());
 
     let stock_service = StockService::new(stock_repository);
@@ -53,6 +53,7 @@ pub fn build_app(
         product_stock_repository,
         suppliers_repository,
         places_repository,
+        event_bus,
     );
 
     start_kafka_poller(producer);

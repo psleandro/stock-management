@@ -3,11 +3,34 @@ use uuid::Uuid;
 
 use crate::models::product::Product;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Event {
     ProductCreated(Product),
     ProductUpdated(Product),
     ProductDeleted(Product),
+    StockChanged(StockEventType),
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub struct StockMovementEvent {
+    pub product_id: Uuid,
+    pub movement_id: i32,
+    pub quantity: i32,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(tag = "event_type", content = "data")]
+pub enum StockEventType {
+    StockIn(StockMovementEvent),
+    StockOut(StockMovementEvent),
+}
+
+impl StockEventType {
+    pub fn product_id(&self) -> Uuid {
+        match self {
+            StockEventType::StockIn(e) | StockEventType::StockOut(e) => e.product_id,
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -52,6 +75,11 @@ impl Event {
                     product_id: product.id,
                     data: product,
                 })?,
+            )),
+            Event::StockChanged(event) => Ok((
+                "stock_movements.events",
+                event.product_id().to_string(),
+                serde_json::to_vec(event)?,
             )),
         }
     }

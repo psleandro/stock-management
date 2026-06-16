@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use crate::contracts::event_bus::{Event, EventBus, StockEventType, StockMovementEvent};
 use crate::errors::{ApplicationError, DomainError};
 use crate::infrastructure::db::places_repository::PlacesRepository;
 use crate::infrastructure::db::products_repository::ProductsRepository;
@@ -15,6 +18,7 @@ pub struct StockMovementsService {
     pub product_stock_repository: ProductStockRepository,
     pub suppliers_repository: SuppliersRepository,
     pub places_repository: PlacesRepository,
+    pub event_bus: Arc<dyn EventBus>,
 }
 
 impl StockMovementsService {
@@ -24,6 +28,7 @@ impl StockMovementsService {
         product_stock_repository: ProductStockRepository,
         suppliers_repository: SuppliersRepository,
         places_repository: PlacesRepository,
+        event_bus: Arc<dyn EventBus>,
     ) -> Self {
         Self {
             products_repository,
@@ -31,6 +36,7 @@ impl StockMovementsService {
             product_stock_repository,
             suppliers_repository,
             places_repository,
+            event_bus,
         }
     }
 
@@ -67,6 +73,15 @@ impl StockMovementsService {
             .stock_movements_repository
             .create_stock_entry(create_stock_entry_data)
             .await?;
+
+        self.event_bus
+            .publish(Event::StockChanged(StockEventType::StockIn(
+                StockMovementEvent {
+                    movement_id: created_stock_movement.id,
+                    product_id: created_stock_movement.product_id,
+                    quantity: created_stock_movement.quantity,
+                },
+            )));
 
         Ok(created_stock_movement)
     }
@@ -111,6 +126,15 @@ impl StockMovementsService {
             .stock_movements_repository
             .create_stock_exit(create_stock_exit_data)
             .await?;
+
+        self.event_bus
+            .publish(Event::StockChanged(StockEventType::StockOut(
+                StockMovementEvent {
+                    movement_id: created_stock_movement.id,
+                    product_id: created_stock_movement.product_id,
+                    quantity: created_stock_movement.quantity * -1,
+                },
+            )));
 
         Ok(created_stock_movement)
     }
