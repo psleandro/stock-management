@@ -30,6 +30,5 @@ type UpsertProductRequest struct {
 
 type ProductEvent struct {
 	EventType string               `json:"event_type"`
-	ProductID string               `json:"product_id"`
 	Data      UpsertProductRequest `json:"data"`
 }

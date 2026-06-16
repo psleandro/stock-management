@@ -51,7 +51,7 @@ func (c *ProductsConsumer) InitializeConsume(ctx context.Context) {
 		case "ProductUpdated":
 			c.productsUsecase.Upsert(event.Data)
 		case "ProductDeleted":
-			ProductID, err := uuid.Parse(event.ProductID)
+			ProductID, err := uuid.Parse(event.Data.ID)
 
 			if err != nil {
 				log.Printf("failed to parse id: %v", err)
