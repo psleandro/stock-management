@@ -1,4 +1,5 @@
 pub mod dto;
+pub mod event;
 pub mod ids;
 pub mod place;
 pub mod product;

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::contracts::event_bus::{Event, EventBus, StockMovementEvent};
+use crate::contracts::event_bus::EventBus;
 use crate::errors::{ApplicationError, DomainError};
 use crate::infrastructure::db::places_repository::PlacesRepository;
 use crate::infrastructure::db::products_repository::ProductsRepository;
@@ -8,6 +8,7 @@ use crate::infrastructure::db::stock_movements_repository::StockMovementsReposit
 use crate::infrastructure::db::stock_repository::ProductStockRepository;
 use crate::infrastructure::db::suppliers_repository::SuppliersRepository;
 use crate::models::dto::stock_movement_dto::{StockMovementEntryDto, StockMovementExitDto};
+use crate::models::event::DomainEvent;
 use crate::models::ids::WorkspaceId;
 use crate::models::stock_movement::{StockMovement, StockMovementEntry, StockMovementExit};
 
@@ -74,11 +75,8 @@ impl StockMovementsService {
             .create_stock_entry(create_stock_entry_data)
             .await?;
 
-        self.event_bus.publish(Event::StockIn(StockMovementEvent {
-            movement_id: created_stock_movement.id,
-            product_id: created_stock_movement.product_id,
-            quantity: created_stock_movement.quantity,
-        }));
+        self.event_bus
+            .publish(DomainEvent::StockIn(created_stock_movement.clone().into()).into_envelope());
 
         Ok(created_stock_movement)
     }
@@ -124,11 +122,8 @@ impl StockMovementsService {
             .create_stock_exit(create_stock_exit_data)
             .await?;
 
-        self.event_bus.publish(Event::StockOut(StockMovementEvent {
-            movement_id: created_stock_movement.id,
-            product_id: created_stock_movement.product_id,
-            quantity: created_stock_movement.quantity * -1,
-        }));
+        self.event_bus
+            .publish(DomainEvent::StockOut(created_stock_movement.clone().into()).into_envelope());
 
         Ok(created_stock_movement)
     }

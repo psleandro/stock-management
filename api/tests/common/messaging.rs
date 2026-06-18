@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
-use stock_management_api::contracts::event_bus::{Event, EventBus};
+use stock_management_api::{contracts::event_bus::EventBus, models::event::EventEnvelope};
 
 pub struct MockEventBus {
-    pub published_events: Arc<Mutex<Vec<Event>>>,
+    pub published_events: Arc<Mutex<Vec<EventEnvelope>>>,
 }
 
 impl MockEventBus {
@@ -13,23 +13,17 @@ impl MockEventBus {
         }
     }
 
-    pub fn published_events(&self) -> Vec<Event> {
+    pub fn published_events(&self) -> Vec<EventEnvelope> {
         self.published_events.lock().unwrap().clone()
     }
 }
 
 impl EventBus for MockEventBus {
-    fn publish(&self, event: Event) {
-        let event_message = event.to_message();
-        self.published_events.lock().unwrap().push(event);
+    fn publish(&self, event_message: EventEnvelope) {
+        let (topic, topic_key) = event_message.get_topic_data();
 
-        match event_message {
-            Ok(message) => {
-                println!("[EVENTBUS] Topic: {:?} | Key: {:?}", message.0, message.1)
-            }
-            Err(err) => {
-                println!("[EVENTBUS] Error: {}", err.to_string())
-            }
-        }
+        self.published_events.lock().unwrap().push(event_message);
+
+        println!("[EVENTBUS] Topic: {:?} | Key: {:?}", topic, topic_key)
     }
 }

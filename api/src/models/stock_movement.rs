@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use uuid::Uuid;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct StockMovement {
     pub id: i32,
     pub movement_date: DateTime<Utc>,

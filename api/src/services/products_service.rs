@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use uuid::Uuid;
 
-use crate::contracts::event_bus::{Event, EventBus};
+use crate::contracts::event_bus::EventBus;
 use crate::errors::ApplicationError;
 use crate::infrastructure::db::products_repository::ProductsRepository;
 use crate::models::dto::product_dto::{CreateProductDto, ListProductsParams, UpdateProductDto};
+use crate::models::event::DomainEvent;
 use crate::models::ids::WorkspaceId;
 use crate::models::product::{CreateProduct, Product, UpdateProduct};
 
@@ -74,7 +75,7 @@ impl ProductsService {
             .await?;
 
         self.event_bus
-            .publish(Event::ProductCreated(created_product.clone()));
+            .publish(DomainEvent::ProductCreated(created_product.clone()).into_envelope());
 
         Ok(created_product)
     }
@@ -101,7 +102,7 @@ impl ProductsService {
         let updated_product = updated_product.ok_or(ApplicationError::NotFound)?;
 
         self.event_bus
-            .publish(Event::ProductUpdated(updated_product.clone()));
+            .publish(DomainEvent::ProductUpdated(updated_product.clone()).into_envelope());
 
         Ok(updated_product)
     }
@@ -119,7 +120,7 @@ impl ProductsService {
         let deleted_product = deleted_product.ok_or(ApplicationError::NotFound)?;
 
         self.event_bus
-            .publish(Event::ProductDeleted(deleted_product.clone()));
+            .publish(DomainEvent::ProductDeleted(deleted_product.clone()).into_envelope());
 
         Ok(())
     }

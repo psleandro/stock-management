@@ -4,14 +4,16 @@ mod tests {
 
     use chrono::Utc;
     use stock_management_api::{
-        contracts::event_bus::{Event, StockEventType},
         db::{
             places_repository::PlacesRepository, products_repository::ProductsRepository,
             stock_movements_repository::StockMovementsRepository,
             stock_repository::ProductStockRepository, suppliers_repository::SuppliersRepository,
         },
         errors::{ApplicationError, DomainError},
-        models::dto::stock_movement_dto::{StockMovementEntryDto, StockMovementExitDto},
+        models::{
+            dto::stock_movement_dto::{StockMovementEntryDto, StockMovementExitDto},
+            event::DomainEvent,
+        },
         services::stock_movements_service::StockMovementsService,
     };
 
@@ -452,17 +454,14 @@ mod tests {
 
         assert_eq!(events.len(), 1);
 
-        match &events[0] {
-            Event::StockChanged(evt) => match evt {
-                StockEventType::StockIn(exit_evt) => {
-                    assert_eq!(exit_evt.movement_id, result.id);
-                    assert_eq!(exit_evt.product_id, product.id);
-                    assert_eq!(exit_evt.quantity, 10);
-                }
-                _ => panic!("expected StockIn event"),
-            },
+        match &events[0].event {
+            DomainEvent::StockIn(event) => {
+                assert_eq!(event.movement_id, result.id);
+                assert_eq!(event.product_id, product.id);
+                assert_eq!(event.quantity, 10);
+            }
 
-            _ => panic!("expected StockChanged event"),
+            _ => panic!("expected StockIn event"),
         }
     }
 
@@ -524,17 +523,13 @@ mod tests {
 
         assert_eq!(events.len(), 2);
 
-        match &events[1] {
-            Event::StockChanged(evt) => match evt {
-                StockEventType::StockOut(exit_evt) => {
-                    assert_eq!(exit_evt.movement_id, result.id);
-                    assert_eq!(exit_evt.product_id, product.id);
-                    assert_eq!(exit_evt.quantity, 5);
-                }
-                _ => panic!("expected StockOut event"),
-            },
-
-            _ => panic!("expected StockChanged event"),
+        match &events[1].event {
+            DomainEvent::StockOut(event) => {
+                assert_eq!(event.movement_id, result.id);
+                assert_eq!(event.product_id, product.id);
+                assert_eq!(event.quantity, 5);
+            }
+            _ => panic!("expected StockOut event"),
         }
     }
 }
